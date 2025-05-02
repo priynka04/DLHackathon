@@ -1,11 +1,77 @@
-# DL Hackathon Project
+# 🤖 MATLAB Troubleshooting Chatbot
 
-## Overview
-This project is an AI-powered financial analysis system that processes and analyzes  data to provide insights and answer user queries. It integrates LangChain,  for efficient data processing and retrieval.
+Hackathon Project – **CS-671 (Deep Learning)**
+
+This project aims to build a chatbot that helps users troubleshoot MATLAB-related queries using deep learning. Users interact through a Streamlit-based web interface where they can ask MATLAB questions. Our system uses LangChain, Hugging Face models, and several deep learning libraries to provide relevant responses.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Streamlit
+- **Backend**: LangChain, Python
+- **LLMs**: Hugging Face Transformers
+- **Vector Store**: FAISS or ChromaDB
+- **Other Tools**: Sentence Transformers, Transformers, OpenAI API (optional)
+
+---
+
+## 🚀 Features
+
+- Chat-based troubleshooting for MATLAB errors and syntax
+- Contextual query understanding via document retrieval
+- LLM-powered answers based on MATLAB documentation
+- User-friendly web interface
+- Modular, extensible backend pipeline
+
+---
+
+## 🧩 Frontend User Flow
+
+![Frontend User Flow 1](Frontend_UI.jpg)
 
 
+---
 
-## Relevant Resources
+## 🔧 Backend Flow
 
-## Contributing
-Feel free to open issues and submit pull requests for improvements.
+![Backend Flowchart](Backend_flow.jpg)
+
+---
+
+## ⚙️ Setup Instructions
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/matlab-chatbot.git
+cd matlab-chatbot
+```
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Run the app:
+
+```bash
+streamlit run app/chatbot_ui.py
+```
+
+## 📄 Example Queries
+- "Fix error: 'Index exceeds matrix dimensions'"
+- "What does 'NaN' mean in MATLAB and how to handle it?"
+- "Why is my matrix multiplication failing in MATLAB?"
+---
+
+## 👥 Team
+
+Developed as part of **CS-671 Deep Learning Hackathon**.
+
+- Bhupesh Yadav
+- Piyush Kumar
+- Asif Hoda
+- Manjeet Rai
+- Tarun Singh
+- Yashodeep
