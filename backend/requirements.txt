@@ -1,1 +1,8 @@
 # demo 
+langchain
+sentence-transformers
+chromadb
+beautifulsoup4
+requests
+unstructured
+tqdm
