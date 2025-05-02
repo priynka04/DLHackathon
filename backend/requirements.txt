@@ -1,1 +1,13 @@
+<<<<<<< HEAD
 # demo 
+langchain
+sentence-transformers
+chromadb
+beautifulsoup4
+requests
+unstructured
+tqdm
+=======
+google-generativeai
+python-dotenv
+>>>>>>> bb8c0a8b37b9f89170ca92c0c6831bb986d8ecea
