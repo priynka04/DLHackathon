@@ -1,7 +1,7 @@
 # DL Hackathon Project
 
 ## Overview
-This project is an AI-powered financial analysis system that processes and analyzes transaction data to provide insights and answer user queries. It integrates LangChain, Fetch.ai, and Pathway for efficient data processing and retrieval.
+This project is an AI-powered financial analysis system that processes and analyzes  data to provide insights and answer user queries. It integrates LangChain,  for efficient data processing and retrieval.
 
 
 
