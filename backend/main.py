@@ -14,7 +14,7 @@ class GraphState(TypedDict):
     question: str
     query_relevance: str  # will hold "yes" or "no"
     x: list|str  # hold the formatted documents (question + objectID)
-    final_answer: str|object
+    final_answer: object
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -145,12 +145,12 @@ def run_qna_workflow(query: str) -> str:
 
 if __name__ == "__main__":
     # query = "What is the capital of France?"
-    # query = "How do I fix segmentation faults in MATLAB?"
+    query = "How do I fix segmentation faults in MATLAB?"
     # query = "How to resolve MATLAB system error?"
     # query = "Where is the Real-Time tab?"
     # query = "How to resolve MATLAB segmentation fault?"
     # query = "when Simulink models cause seg faults?"
-    query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
+    # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     # query = "In the SimpleMessagesModel, after changing the Receive block's Sample time to 0.5, the Scope output no longer matches the original sine wave pattern. What could be causing this discrepancy, and how can it be resolved to maintain signal integrity in the received messages?"
     print("Query:")
     print(query)

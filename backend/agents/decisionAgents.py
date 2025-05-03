@@ -3,9 +3,13 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts.chat import ChatPromptTemplate
+from dotenv import load_dotenv
+import google.generativeai as genai
+
 
 load_dotenv()
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+api_key = os.getenv("GEMINI_API_KEY")
 
 embedder = HuggingFaceEmbeddings(
     model_name="intfloat/e5-base-v2",
@@ -17,6 +21,8 @@ llm = HuggingFaceEndpoint(
     temperature=0.7,
     max_length=200
 )
+# genai.configure(api_key=api_key)
+# llm = genai.GenerativeModel("gemini-2.0-flash")
 
 relevance_prompt_template = ChatPromptTemplate.from_messages([
     ("system", 
@@ -37,6 +43,11 @@ def isQueryRelevantAgent(query: str) -> str:
     try:
         formatted_prompt = relevance_prompt_template.format_messages(query=query)
         response = llm.invoke(formatted_prompt).strip().lower()
+        # formatted_messages = relevance_prompt_template.format_messages(query=query)
+        # prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
+        # response = llm.generate_content(prompt_str)
+        # llm_response = response.text.strip().lower()
+        # print("LLM Response:", llm_response)
 
         if "yes" in response:
             return "yes"

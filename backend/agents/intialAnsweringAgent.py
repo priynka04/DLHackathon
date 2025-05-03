@@ -20,7 +20,10 @@ def InitialAnsweringAgent(query: str) -> str:
     """
 
     response = model.generate_content(prompt)
-    return response.text.strip()
+    return {
+        'answer': response.text.strip(),
+        'contributing_links': []
+    }
 
 if __name__ == "__main__":
     query = "Who is the president of the USA?"
