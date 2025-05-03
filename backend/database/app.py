@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from datetime import datetime
 import hashlib
 import os
+from bson import ObjectId
+import random
+import string
 
 # -------------------- Initialize Flask App --------------------
 app = Flask(__name__)
@@ -128,7 +131,7 @@ def signup_user():
 
 
 
-
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # route to get answer using question object id 
 @app.route('/get-answer', methods=['GET'])
@@ -144,7 +147,34 @@ def get_answer_by_object_id():
     return jsonify(result)
 
 
+# endpoint to add question and answer to the database
+def generate_ques_id(length=24):
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
+@app.route('/add-qna', methods=['POST'])
+def add_qna():
+    # Get the input data (question and answer)
+    data = request.json
+    question = data.get('question')
+    answer = data.get('answer')
+
+    if not question or not answer:
+        return jsonify({"error": "Missing question or answer"}), 400
+
+    # Generate random ques_id
+    ques_id = generate_ques_id()
+
+    # Insert the new Q&A entry into the database
+    new_qna = {
+        "question": question,
+        "answer": answer,
+        "ques_id": ques_id
+    }
+
+    result = global_collection.insert_one(new_qna)
+
+    # Return the ObjectId of the newly created document
+    return jsonify({"objectId": str(result.inserted_id), "ques_id": ques_id}), 201
 
 
 

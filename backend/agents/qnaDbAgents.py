@@ -5,6 +5,7 @@ from langchain.docstore.document import Document
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
+import requests
 import pickle
 
 load_dotenv()
@@ -41,6 +42,7 @@ relevance_prompt_template = ChatPromptTemplate.from_messages([
 
 VECTOR_DB_PATH = "./qnaDB"
 
+# qnaDB 
 def AddQuestionQnaDb(question: str, object_id: str):
     doc = Document(
         page_content=question,
@@ -57,7 +59,7 @@ def AddQuestionQnaDb(question: str, object_id: str):
     print(f"✅ Added question to qnaDB with ObjectID: {object_id}")
 
 
-
+# qnaDB 
 def QuestionFinderAgent(query: str, k: int = 1):
     if not os.path.exists(os.path.join(VECTOR_DB_PATH, "index.faiss")):
         print("❌ qnaDB does not exist yet.")
@@ -96,18 +98,47 @@ def QuestionFinderAgent(query: str, k: int = 1):
 
 
 
+# main database
+def add_qna_to_backend(question: str, answer: str):
+    url = "http://127.0.0.1:5000/add-qna" 
+    data = {
+        "question": question,
+        "answer": answer
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 201:
+        result = response.json()
+        object_id = result["objectId"]
+        AddQuestionQnaDb(question, object_id)
+        print(f"✅ Successfully added Q&A to backend with ObjectID: {object_id}")
+        return object_id  
+    else:
+        print("Failed to add Q&A to backend.")
+        return None
+
+
+
+
 if __name__ == "__main__":
     # AddQuestionQnaDb("How do I fix a segmentation fault in MATLAB?", "661fc8d213c9b34567bcde12")
     # AddQuestionQnaDb("What is the use of Simulink in MATLAB?", "661fc8d213c9b34567bcde13")
 
-    query = "How to resolve MATLAB system error?"
-    output = QuestionFinderAgent(query, k=4)
+    # query = "How to resolve MATLAB system error?"
+    # output = QuestionFinderAgent(query, k=4)
 
-    if output == "no":
-        print("🤖 Query not relevant.")
+    # if output == "no":
+    #     print("🤖 Query not relevant.")
+    # else:
+    #     print("🤖 Top Similar Questions:")
+    #     for i, match in enumerate(output, 1):
+    #         print(f"\nMatch {i}:")
+    #         print(f"Question: {match['question']}")
+    #         print(f"Mongo ObjectID: {match['objectId']}")
+
+    question = "What is a segmentation fault?"
+    answer = "A segmentation fault is caused by accessing memory that the CPU cannot read or write."
+    object_id = add_qna_to_backend(question, answer)
+    if object_id:
+        print(f"✅ Successfully added question with ObjectID: {object_id}")
     else:
-        print("🤖 Top Similar Questions:")
-        for i, match in enumerate(output, 1):
-            print(f"\nMatch {i}:")
-            print(f"Question: {match['question']}")
-            print(f"Mongo ObjectID: {match['objectId']}")
+        print("Failed to add the question.")

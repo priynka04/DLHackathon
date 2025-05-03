@@ -56,11 +56,11 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
             print(f"Metadata: {doc.metadata}\n")
         context = "\n\n".join([doc.page_content for doc in docs])
 
-        # prompt = prompt_template.format(context=context, question=query)
+        prompt = prompt_template.format(context=context, question=query)
 
-        # response = llm.invoke(prompt)
-        # return response.strip()
-        return "s"
+        response = llm.invoke(prompt)
+        return response.strip()
+        # return "s"
 
     except Exception as e:
         return f"❌ Error: {str(e)}"
