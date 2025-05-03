@@ -42,7 +42,7 @@ prompt_template = ChatPromptTemplate.from_messages([
 
 def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
     try:
-        index_path = f"/home/piyush/DCIM/code/projects/DL/DLHackathon/{vectorstore_name}"
+        index_path = f"backend/{vectorstore_name}"
         # index_path = vectorstore_name
         vectorstore = FAISS.load_local(index_path, embedder, allow_dangerous_deserialization=True)
 
