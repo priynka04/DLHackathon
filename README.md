@@ -35,7 +35,7 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 
 ## 🔧 Backend Flow
 
-![Backend Flowchart](Backend_flow.jpg)
+![Backend Flowchart](Backend.jpg)
 
 ---
 
