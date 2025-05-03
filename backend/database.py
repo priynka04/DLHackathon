@@ -10,6 +10,8 @@ from bson.objectid import ObjectId
 import random
 import string
 import uuid
+from main import run_qna_workflow
+from agents.imageQueryAgent import generate_query_from_image
 
 load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -32,10 +34,6 @@ user_collection = db["user"]
 global_collection = db["qna"]
 user_credentials_collection = db["user_credentials"]
 
-# -------------------- Dummy Answer Generator --------------------
-def generate_answer(question, mode):
-    return f"{mode}: This is a dummy answer for: {question}"
-
 # -------------------- Routes --------------------
 
 @app.route("/ask", methods=["POST"])
@@ -47,7 +45,7 @@ def ask_question():
     mode = data.get("mode", "Web Search")
     timestamp = datetime.utcnow()
 
-    answer = f"{mode}: This is a dummy answer for: {question}"
+    answer = run_qna_workflow(question)
     ques_id = str(uuid.uuid4())
 
     chat_entry = {
@@ -320,6 +318,35 @@ def add_qna():
     return jsonify({"objectId": str(result.inserted_id), "ques_id": ques_id}), 201
 
 
+# ---------------Suggestion Generation------------------
+from agents.autocompleteAgent import get_matlab_suggestions
+
+@app.route("/suggest", methods=["GET"])
+def suggest():
+    query = request.args.get("q", "")
+    # print("Query:", query)  # Debugging line to check the query value
+    if not query:
+        return jsonify(suggestions=[])
+    
+    suggestions = get_matlab_suggestions(query)
+    return jsonify(suggestions=suggestions)
+
+
+
+@app.route('/image-to-query', methods=['POST'])
+def image_to_query():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    file = request.files['file']
+    image_bytes = file.read()
+
+    query = generate_query_from_image(image_bytes)
+    
+    if query.startswith("❌ Error"):
+        return jsonify({'error': query}), 500
+    
+    return jsonify({'query': query})
 
 
 

@@ -14,7 +14,7 @@ class GraphState(TypedDict):
     question: str
     query_relevance: str  # will hold "yes" or "no"
     x: list|str  # hold the formatted documents (question + objectID)
-    final_answer: str
+    final_answer: str|object
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -87,8 +87,8 @@ def add_qna_to_backendNode(state: GraphState) -> GraphState:
     print("🤖 Adding QnA to backend...")
     question = state["question"]
     answer = state["final_answer"]
-    # object_id = add_qna_to_backend(question, answer)
-    # print(f"QnA added with Object ID: {object_id}")
+    object_id = add_qna_to_backend(question, answer)
+    print(f"QnA added with Object ID: {object_id}")
     return state
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

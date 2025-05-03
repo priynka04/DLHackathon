@@ -34,18 +34,22 @@ llm = genai.GenerativeModel("gemini-2.0-flash")
 
 rag_prompt_template = ChatPromptTemplate.from_messages([
     ("system",
-     "You are an expert assistant. Your task is to answer the user's query using the provided list of related question-answer pairs. Focus specifically on addressing the core of the user's question based on the information given.\n\n"
+     "You are an expert assistant helping users troubleshoot and understand MATLAB-related queries.\n\n"
      "**Instructions:**\n"
-     "- Read the user's query carefully, paying attention to any specific conditions or aspects mentioned (e.g., 'when', 'how', 'why').\n"
-     "- Use the provided Q&A pairs as your *only* knowledge source.\n"
-     "- Answer the user's query directly based on the information within the Q&A pairs.\n"
-     "**Response Format:**\n"
-     "- Provide a concise answer to the query. Strictly no extra explanation needed.\n"
+     "- First, try to use the provided list of related question-answer pairs as much as possible.\n"
+     "- If the Q&A pairs don't fully answer the query, you may use your own knowledge to complete the response.\n"
+     "- Organize the answer using clear and meaningful sections, depending on the nature of the query. Examples of useful section headings include: 'Summary', 'Cause', 'Resolution', 'Notes', 'Clarification', etc.\n"
+     "- Include only the sections relevant to the query. Do not force unnecessary sections.\n"
+     "- Ensure clarity, helpfulness, and technical correctness.\n\n"
+     "**Response Guideline:**\n"
+     "Use your judgment to choose section headings that best organize the answer. You are not restricted to a fixed format."
+     "But Try to use headings to organize the answer.\n\n"
     ),
     ("user",
      "User Query: {query}\n\n"
      "Related Question-Answer Pairs:\n{qa_pairs}")
 ])
+
 
 def extract_final_answer(llm_response: str) -> str:
     last_a_index = llm_response.rfind("A:")
@@ -56,13 +60,16 @@ def extract_final_answer(llm_response: str) -> str:
 
 def AnswerQnaAgent(query: str, related_qa) -> str:
     qa_pairs = []
+    contributing_links = []
     for item in related_qa:
         answer = fetch_answer(item["objectId"]) # database backend call
         if answer:
             qa_pairs.append({
                 "question": item["question"],
-                "answer": answer
+                "answer": answer['answer']
             })
+            contributing_links.append(answer['contributing_links'])
+
     formatted_qa = "\n\n".join(
         f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
     )
@@ -76,7 +83,11 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
     response = llm.generate_content(prompt_str)
     llm_response = response.text.strip().lower()
     # final_answer = extract_final_answer(response)
-    return llm_response
+    # return llm_response
+    return {
+        "answer": llm_response,
+        "contributing_links": contributing_links
+    }
 
 
 
