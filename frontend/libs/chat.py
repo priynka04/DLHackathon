@@ -30,8 +30,28 @@ def get_bot_response(user_input):
         st.error(f"❌ Backend not reachable: {e}")
         return "❌ Backend not reachable."
 
+# -------------------- Image to Query --------------------
+
+def get_query_from_image(image_file):
+    try:
+        files = {'file': image_file}
+        res = requests.post(f"{BACKEND_URL}/image-to-query", files=files)
+        if res.status_code == 200:
+            return res.json().get("query", "")
+        else:
+            st.error(f"Image processing failed: {res.status_code}")
+            return ""
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error communicating with image processing service: {e}")
+        return ""
+
+
+
+
 # -------------------- Main Chat --------------------
 def chat():
+    if "page" not in st.session_state:
+        st.session_state.page = "chat"
     user_id = st.session_state.get("user_id")
 
     # Initialize chat_sessions if not present
@@ -148,6 +168,11 @@ def chat():
             except requests.exceptions.RequestException:
                 st.error("Could not reach server to create new chat.")
 
+        if st.button("📊 Image Troubleshooting"):
+            st.session_state.page = "image_upload"
+            st.rerun()
+
+
         if st.button("🗑️ Delete Chat"):
             chat_id = st.session_state.current_chat_id
             try:
@@ -178,6 +203,30 @@ def chat():
                 del st.session_state[key]
             st.rerun()
 
+    if st.session_state.page == "image_upload":
+        st.title("🧮 MATLAB Image Troubleshooting")
+
+        uploaded_file = st.file_uploader("Upload an image of the MATLAB error or code", type=["png", "jpg", "jpeg"])
+
+        if uploaded_file:
+            st.image(uploaded_file, caption="Uploaded image", use_column_width=True)
+
+            if st.button("Generate Answer from Image"):
+                query = get_query_from_image(uploaded_file)
+                if query:
+                    with st.expander("🔍 Extracted Query", expanded=True):
+                        st.code(query)
+
+                    response = get_bot_response(query)
+
+                    st.subheader("🧠 Assistant's Answer")
+                    st.markdown(response)
+
+        st.button("🔙 Back to Chat", on_click=lambda: st.session_state.update({"page": "chat"}))
+        st.stop()  # ⛔ Prevents the chat UI from rendering below
+
+
+
     # ---------------- Main Chat Display ----------------
     current_chat_id = st.session_state.current_chat_id
     chat_info = st.session_state.chat_sessions[current_chat_id]
@@ -204,6 +253,9 @@ def chat():
 
 
     user_input = st.chat_input("Type your message...")
+
+
+
     # if user_input:
     #     st.session_state.chat_sessions[current_chat_id]["messages"].append({"role": "user", "content": user_input})
     #     response = get_bot_response(user_input)
