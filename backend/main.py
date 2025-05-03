@@ -23,15 +23,16 @@ def isQueryRelevantNode(state: GraphState) -> GraphState:
     print("🤖 Checking query relevance...")
     query = state["question"]
     relevance = isQueryRelevantAgent(query)
+    print(f"Query relevance: {relevance}")
     state["query_relevance"] = relevance
     return state
 
 def checkRelevance(state: GraphState) -> str:
     """Conditional router based on query relevance."""
     if state["query_relevance"] == "yes":
-        return "yes"  # name of the next node for 'yes'
+        return "yes"  
     else:
-        return "no"   # name of the next node for 'no'
+        return "no"  # no ya error ane pe idhar jayega --> direct answer InitialAnsweringNode ke paas
 
 
 def InitialAnsweringNode(state: GraphState) -> GraphState:
@@ -49,6 +50,10 @@ def QuestionFinderNode(state: GraphState) -> GraphState:
     query = state["question"]
     output = QuestionFinderAgent(query, k=4)
     state["x"] = output
+    if(output == "no"):
+        print("No related questions found.")
+    else:
+        print(f"Related questions found:")
     return state
 
 def checkRedundence(state: GraphState) -> str:
@@ -86,8 +91,6 @@ workflow.add_node("initial_answering", InitialAnsweringNode)
 workflow.add_node("question_finder", QuestionFinderNode)
 workflow.add_node("answer_qna", AnswerQnaNode)
 workflow.add_node("answer_rag", AnswerRagNode)
-workflow.add_node("add_qna_to_backend", add_qna_to_backend)
-workflow.add_node("END", END)
 
 workflow.set_entry_point("is_query_relevant")
 workflow.add_conditional_edges(
@@ -98,7 +101,7 @@ workflow.add_conditional_edges(
         "no": "initial_answering",
     },
 )
-workflow.add_edge("initial_answering", "END")
+workflow.add_edge("initial_answering", END)
 workflow.add_conditional_edges(
     "question_finder",
     checkRedundence,
@@ -126,3 +129,14 @@ def run_qna_workflow(query: str) -> str:
     }
     final_state = app.invoke(input_state)
     return final_state.get("final_answer", "⚠️ No answer generated.")
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    # query = "What is the capital of France?"
+    query = "How do I fix segmentation faults in MATLAB?"
+    print("Query:")
+    print(query)
+    final_answer = run_qna_workflow(query)
+    print("Final Answer:")
+    print(final_answer)

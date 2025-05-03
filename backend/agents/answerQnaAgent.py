@@ -50,7 +50,7 @@ def extract_final_answer(llm_response: str) -> str:
 def AnswerQnaAgent(query: str, related_qa) -> str:
     qa_pairs = []
     for item in related_qa:
-        answer = fetch_answer(item["objectId"])
+        answer = fetch_answer(item["objectId"]) # database backend call
         if answer:
             qa_pairs.append({
                 "question": item["question"],
