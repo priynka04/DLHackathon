@@ -34,10 +34,6 @@ user_collection = db["user"]
 global_collection = db["qna"]
 user_credentials_collection = db["user_credentials"]
 
-# -------------------- Dummy Answer Generator --------------------
-def generate_answer(question, mode):
-    return f"{mode}: This is a dummy answer for: {question}"
-
 # -------------------- Routes --------------------
 
 @app.route("/ask", methods=["POST"])
@@ -328,6 +324,7 @@ from agents.autocompleteAgent import get_matlab_suggestions
 @app.route("/suggest", methods=["GET"])
 def suggest():
     query = request.args.get("q", "")
+    # print("Query:", query)  # Debugging line to check the query value
     if not query:
         return jsonify(suggestions=[])
     

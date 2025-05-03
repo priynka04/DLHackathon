@@ -45,6 +45,35 @@ def get_query_from_image(image_file):
         st.error(f"Error communicating with image processing service: {e}")
         return ""
 
+# -------------------- Autocomplete Suggestions --------------------
+
+# def get_autocomplete_suggestions(query):
+#     try:
+#         res = requests.get(f"{BACKEND_URL}/suggest", params={"q": query})
+#         if res.status_code == 200:
+#             suggestions_string = res.json().get("suggestions", "")
+#             return [s.strip() for s in suggestions_string.split("$") if s.strip()]
+#         else:
+#             return []
+#     except requests.exceptions.RequestException:
+#         return []
+
+def get_autocomplete_suggestions(query):
+    try:
+        res = requests.get(f"{BACKEND_URL}/suggest", params={"q": query})
+        if res.status_code == 200:
+            suggestions_list = res.json().get("suggestions", [])
+            # print("Q", query)
+            if isinstance(suggestions_list, list):
+                return [s.strip() for s in suggestions_list if isinstance(s, str) and s.strip()]
+            else:
+                return []
+        else:
+            return []
+    except requests.exceptions.RequestException:
+        return []
+
+
 
 
 
@@ -73,12 +102,6 @@ def chat():
             st.error(f"Failed to connect to server to load chats: {e}")
         
 
-    # Initialize current_chat_id if not present or if chat_sessions is empty
-    # if "current_chat_id" not in st.session_state:
-    #     st.session_state.current_chat_id = next(iter(st.session_state.chat_sessions.keys())) if st.session_state.chat_sessions else None
-
-
-    # print(st.session_state.current_chat_id)
 
 
     if "current_chat_id" not in st.session_state or not st.session_state.chat_sessions:
@@ -109,13 +132,13 @@ def chat():
             st.rerun() # Rerun to display the welcome chat
 
 
-    # print(1)
-    # print(st.session_state.chat_sessions)
 
-
-
+    # Initialize default mode if not set
     if "mode" not in st.session_state:
         st.session_state.mode = "MATLAB Troubleshooting"
+
+
+
 
     # ---------------- Sidebar ----------------
     with st.sidebar:
@@ -144,8 +167,18 @@ def chat():
                 st.warning("Server unreachable while loading chat messages.")
             st.rerun()
 
-        # print("------------------")
-        # print(st.session_state.chat_sessions)
+        # Rethink button in sidebar to toggle mode
+        rethink_button = st.button("🔄 Rethink Mode")
+        if rethink_button:
+            # Toggle between Web Search and MATLAB Troubleshooting mode
+            if st.session_state.mode == "Web Search":
+                st.session_state.mode = "MATLAB Troubleshooting"
+            else:
+                st.session_state.mode = "Web Search"
+
+        # Display current mode
+        st.markdown(f"<p style='text-align: center; color: gray;'>Current mode: <strong>{st.session_state.mode}</strong></p>", unsafe_allow_html=True)
+
 
         if st.button("➕ New Chat"):
             try:
@@ -226,41 +259,22 @@ def chat():
         st.stop()  # ⛔ Prevents the chat UI from rendering below
 
 
-
     # ---------------- Main Chat Display ----------------
     current_chat_id = st.session_state.current_chat_id
     chat_info = st.session_state.chat_sessions[current_chat_id]
     chat_history = chat_info.get("messages", [])
-
-
-    # for msg in chat_history:
-    #     print("-------------------")
-    #     print(msg)
-    #     print("--------------------")
-    #     if "question" in msg and "answer" in msg:
-    #         with st.chat_message(msg["question"]):
-    #             st.markdown(msg["answer"])
 
     for msg in chat_history:
         if "question" in msg and "answer" in msg:
             # User message
             with st.chat_message("user"):
                 st.markdown(f"**You:** {msg['question']}")
-            
-            # Assistant/AI message
+            # Assistant message
             with st.chat_message("assistant"):
                 st.markdown(msg["answer"])
 
-
+    # --- Chat Input ---
     user_input = st.chat_input("Type your message...")
-
-
-
-    # if user_input:
-    #     st.session_state.chat_sessions[current_chat_id]["messages"].append({"role": "user", "content": user_input})
-    #     response = get_bot_response(user_input)
-    #     st.session_state.chat_sessions[current_chat_id]["messages"].append({"role": "assistant", "content": response})
-    #     st.rerun()
 
     if user_input:
         # Append user message
@@ -271,60 +285,9 @@ def chat():
         with st.chat_message("user"):
             st.markdown(f"**You:** {user_input}")
 
-        # Get and display bot response immediately
+        # Get and display bot response
         response = get_bot_response(user_input)
-
         st.session_state.chat_sessions[current_chat_id]["messages"][-1]["answer"] = response
 
         with st.chat_message("assistant"):
             st.markdown(response)
-
-        # Optionally rerun if needed for other updates
-        # st.rerun()
-
-
-    # ---------------- Mode Selector ----------------
-    st.markdown(
-        """
-        <style>
-        .mode-container {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: -0.5rem;
-            padding-bottom: 1rem;
-        }
-        .mode-button {
-            border: 1px solid #444;
-            border-radius: 999px;
-            padding: 6px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            background-color: #1f1f1f;
-            color: white;
-            transition: all 0.2s ease-in-out;
-        }
-        .mode-button:hover {
-            background-color: #333;
-        }
-        .mode-button.selected {
-            background-color: #ff4b4b;
-            border-color: #ff4b4b;
-            color: white;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown('<div class="mode-container">', unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🌐 Web Search", key="web", use_container_width=True, help="Use Web Search mode"):
-            st.session_state.mode = "Web Search"
-    with col2:
-        if st.button("🧮 MATLAB Troubleshooting", key="matlab", use_container_width=True, help="Use MATLAB mode"):
-            st.session_state.mode = "MATLAB Troubleshooting"
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown(f"<p style='text-align: center; color: gray;'>Current mode: <strong>{st.session_state.mode}</strong></p>", unsafe_allow_html=True)
