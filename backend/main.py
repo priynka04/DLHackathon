@@ -134,8 +134,8 @@ def run_qna_workflow(query: str) -> str:
 
 if __name__ == "__main__":
     # query = "What is the capital of France?"
-    # query = "How do I fix segmentation faults in MATLAB?"
-    query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
+    query = "How do I fix segmentation faults in MATLAB?"
+    # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     print("Query:")
     print(query)
     final_answer = run_qna_workflow(query)
