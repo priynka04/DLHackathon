@@ -322,6 +322,17 @@ def add_qna():
     return jsonify({"objectId": str(result.inserted_id), "ques_id": ques_id}), 201
 
 
+# ---------------Suggestion Generation------------------
+from agents.autocompleteAgent import get_matlab_suggestions
+
+@app.route("/suggest", methods=["GET"])
+def suggest():
+    query = request.args.get("q", "")
+    if not query:
+        return jsonify(suggestions=[])
+    
+    suggestions = get_matlab_suggestions(query)
+    return jsonify(suggestions=suggestions)
 
 
 
