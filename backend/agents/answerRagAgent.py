@@ -87,7 +87,7 @@ prompt_template = ChatPromptTemplate.from_messages([
      "**Instructions:**\n"
      "- Use only the given context to answer the question.\n"
      "- Do not make up information or rely on prior knowledge.\n"
-     "- If the context is insufficient, respond strictly with: \"I don't know\".\n"
+    #  "- If the context is insufficient, respond strictly with: \"I don't know\".\n"
      "- Be concise, clear, and technical in your answer.\n\n"
      "**Response Guideline:**\n"
      "Structure the answer clearly with relevant technical headings (e.g., \"Issue\", \"Root Cause\", \"Fix\", \"Notes\") only if appropriate. Use your judgment to decide which headings best organize the answer."

@@ -16,13 +16,13 @@ embedder = HuggingFaceEmbeddings(
     model_kwargs={"device": "cpu"}
 )
 
-# llm = HuggingFaceEndpoint(
-#     repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
-#     temperature=0.7,
-#     max_length=200
-# )
-genai.configure(api_key=api_key)
-llm = genai.GenerativeModel("gemini-2.0-flash")
+llm = HuggingFaceEndpoint(
+    repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
+    temperature=0.7,
+    max_length=200
+)
+# genai.configure(api_key=api_key)
+# llm = genai.GenerativeModel("gemini-2.0-flash")
 
 relevance_prompt_template = ChatPromptTemplate.from_messages([
     ("system", 
@@ -41,16 +41,17 @@ relevance_prompt_template = ChatPromptTemplate.from_messages([
 
 def isQueryRelevantAgent(query: str) -> str:
     try:
-        # formatted_prompt = relevance_prompt_template.format_messages(query=query)
-        # response = llm.invoke(formatted_prompt).strip().lower()
-        formatted_messages = relevance_prompt_template.format_messages(query=query)
-        prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
-        response = llm.generate_content(prompt_str)
-        llm_response = response.text.strip().lower()
+        formatted_prompt = relevance_prompt_template.format_messages(query=query)
+        response = llm.invoke(formatted_prompt).strip().lower()
+        # formatted_messages = relevance_prompt_template.format_messages(query=query)
+        # prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
+        # response = llm.generate_content(prompt_str)
+        # llm_response = response.text.strip().lower()
+        # print("LLM Response:", llm_response)
 
-        if "yes" in llm_response:
+        if "yes" in response:
             return "yes"
-        elif "no" in llm_response:
+        elif "no" in response:
             return "no"
         else:
             return "no"
