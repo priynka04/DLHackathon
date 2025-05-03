@@ -14,7 +14,7 @@ class GraphState(TypedDict):
     question: str
     query_relevance: str  # will hold "yes" or "no"
     x: list|str  # hold the formatted documents (question + objectID)
-    final_answer: str|object
+    final_answer: object
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
