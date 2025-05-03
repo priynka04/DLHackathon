@@ -123,11 +123,12 @@ def add_qna_to_backend(question: str, answer: str):
 
 
 if __name__ == "__main__":
-    # AddQuestionQnaDb("How do I fix a segmentation fault in MATLAB?", "661fc8d213c9b34567bcde12")
-    # AddQuestionQnaDb("What is the use of Simulink in MATLAB?", "661fc8d213c9b34567bcde13")
+    # AddQuestionQnaDb("How to debug segmentation faults?", "68163cc7309002da1587611a")
+    # AddQuestionQnaDb("What causes segmentation faults in MATLAB?", "68163cc3309002da15876119")
+    # AddQuestionQnaDb("Can Simulink models cause segmentation faults?", "68163ca8309002da15876118")
 
-    # query = "How to resolve MATLAB system error?"
-    query = "Where is the Real-Time tab?"
+    query = "How to resolve MATLAB system error?"
+    # query = "Where is the Real-Time tab?"
     # query = "How to resolve MATLAB segmentation fault?"
     # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     output = QuestionFinderAgent(query, k=4)

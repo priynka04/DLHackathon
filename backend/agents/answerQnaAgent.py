@@ -66,8 +66,9 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
     formatted_qa = "\n\n".join(
         f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
     )
-    for pair in qa_pairs:
-        print(f"Q: {pair['question']}\nA: {pair['answer']}")
+    # for pair in qa_pairs:
+    #     print(f"Q: {pair['question']}\nA: {pair['answer']}")
+    
     # prompt = rag_prompt_template.format_messages(query=query, qa_pairs=formatted_qa)
     # response = llm.invoke(prompt).strip()
     formatted_messages = rag_prompt_template.format_messages(query=query,qa_pairs=formatted_qa)

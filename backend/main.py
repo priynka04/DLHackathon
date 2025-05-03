@@ -82,6 +82,15 @@ def AnswerRagNode(state: GraphState) -> GraphState:
     state["final_answer"] = answer
     return state
 
+def add_qna_to_backendNode(state: GraphState) -> GraphState:
+    """ Add question and answer to the backend database. """
+    print("🤖 Adding QnA to backend...")
+    question = state["question"]
+    answer = state["final_answer"]
+    # object_id = add_qna_to_backend(question, answer)
+    # print(f"QnA added with Object ID: {object_id}")
+    return state
+
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 workflow = StateGraph(GraphState)
@@ -91,6 +100,7 @@ workflow.add_node("initial_answering", InitialAnsweringNode)
 workflow.add_node("question_finder", QuestionFinderNode)
 workflow.add_node("answer_qna", AnswerQnaNode)
 workflow.add_node("answer_rag", AnswerRagNode)
+workflow.add_node("add_qna_to_backend", add_qna_to_backendNode)
 
 workflow.set_entry_point("is_query_relevant")
 workflow.add_conditional_edges(
@@ -110,8 +120,9 @@ workflow.add_conditional_edges(
         "no": "answer_rag",
     },
 )
-workflow.add_edge("answer_qna",END)
-workflow.add_edge("answer_rag",END)
+workflow.add_edge("answer_qna", END)
+workflow.add_edge("answer_rag", "add_qna_to_backend")
+workflow.add_edge("add_qna_to_backend", END)
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -135,7 +146,12 @@ def run_qna_workflow(query: str) -> str:
 if __name__ == "__main__":
     # query = "What is the capital of France?"
     # query = "How do I fix segmentation faults in MATLAB?"
+    # query = "How to resolve MATLAB system error?"
+    # query = "Where is the Real-Time tab?"
+    # query = "How to resolve MATLAB segmentation fault?"
+    # query = "when Simulink models cause seg faults?"
     query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
+    # query = "In the SimpleMessagesModel, after changing the Receive block's Sample time to 0.5, the Scope output no longer matches the original sine wave pattern. What could be causing this discrepancy, and how can it be resolved to maintain signal integrity in the received messages?"
     print("Query:")
     print(query)
     final_answer = run_qna_workflow(query)
