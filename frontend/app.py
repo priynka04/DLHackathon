@@ -4,6 +4,7 @@ st.set_page_config(page_title="AI Troubleshooter", page_icon="🤖", layout="cen
 
 from libs.auth import check_auth, login, is_logged_in
 from libs.chat import chat
+from libs.admin import admin
 
 
 # Initialize session state
@@ -15,6 +16,9 @@ check_auth()
 
 # Route
 if is_logged_in():
-    chat()
+    if st.session_state.get("is_admin"):
+        admin()
+    else:
+        chat()
 else:
     login()
