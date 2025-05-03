@@ -6,8 +6,13 @@ from datetime import datetime
 import hashlib
 import os
 from bson import ObjectId
+from bson.objectid import ObjectId
 import random
 import string
+import uuid
+
+load_dotenv()
+MONGODB_URI = os.getenv("MONGODB_URI")
 
 # -------------------- Initialize Flask App --------------------
 app = Flask(__name__)
@@ -15,7 +20,7 @@ CORS(app)  # Enable CORS for frontend-backend communication
 
 # -------------------- Connect to MongoDB --------------------
 try:
-    client = MongoClient("mongodb+srv://b23152:1997january@cluster0.cj44rwl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient(MONGODB_URI)
     client.admin.command('ping')
     print("✅ MongoDB connection successful!")
 except Exception as e:
@@ -28,48 +33,165 @@ global_collection = db["qna"]
 user_credentials_collection = db["user_credentials"]
 
 # -------------------- Dummy Answer Generator --------------------
-def generate_answer(question):
-    return f"This is a dummy answer for: {question}"
+def generate_answer(question, mode):
+    return f"{mode}: This is a dummy answer for: {question}"
 
 # -------------------- Routes --------------------
-from bson.objectid import ObjectId
 
 @app.route("/ask", methods=["POST"])
 def ask_question():
-    data = request.get_json()
+    data = request.json
     user_id = data.get("user_id")
+    chat_id = data.get("chat_id")
     question = data.get("question")
-    ques_id = data.get("ques_id")
+    mode = data.get("mode", "Web Search")
+    timestamp = datetime.utcnow()
 
-    if not user_id or not question or not ques_id:
-        return jsonify({"error": "Missing user_id, question, or ques_id"}), 400
-
-    answer = generate_answer(question)
+    answer = f"{mode}: This is a dummy answer for: {question}"
+    ques_id = str(uuid.uuid4())
 
     chat_entry = {
         "ques_id": ques_id,
         "question": question,
         "answer": answer,
-        "timestamp": datetime.utcnow()
+        "mode": mode,
+        "timestamp": timestamp
+    }
+
+
+    # Find the user, or initialize if not found
+    user_doc = user_collection.find_one({"user_id": user_id})
+
+    if not user_doc:
+        # If the user does not exist, initialize their document
+        user_collection.insert_one({
+            "user_id": user_id,
+            "chat_history": []  # Empty chat history for new user
+        })
+        user_doc = {"chat_history": []}  # Initialize chat history for new user
+
+    chat_history = user_doc.get("chat_history", [])
+
+    chat_found = False
+    for chat in chat_history:
+        if chat["chat_id"] == chat_id:
+            chat["messages"].append(chat_entry)
+            chat_found = True
+            break
+
+    if not chat_found:
+        # Create a new chat if no chat with the given chat_id exists
+        chat_name = "Welcome Chat"  # You can replace this with any default or generated chat name
+        chat_history.append({
+            "chat_id": chat_id,
+            "chat_name": chat_name,
+            "messages": [chat_entry]
+        })
+
+    # Update the user document with the new chat history
+    user_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"chat_history": chat_history}}
+    )
+
+    return jsonify({"status": "success", "answer": answer, "questionId": ques_id})
+
+
+
+# Get all chats of a user
+
+@app.route("/user/chats/<user_id>", methods=["GET"])
+def get_user_chats(user_id):
+    user_doc = user_collection.find_one({"user_id": user_id}, {"_id": 0, "chat_history": 1})
+    if not user_doc or "chat_history" not in user_doc:
+        return jsonify({"chats": []})
+
+    chat_history = user_doc["chat_history"]
+    chat_list = [{"chat_name": chat["chat_name"], "chat_id": chat["chat_id"]} for chat in chat_history]
+
+    return jsonify({"chats": chat_list})
+
+
+# get a specific chat
+
+def convert_object_ids(obj):
+    if isinstance(obj, list):
+        return [convert_object_ids(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: convert_object_ids(value) for key, value in obj.items()}
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    return obj
+
+@app.route("/user/chat/<user_id>/<chat_id>", methods=["GET"])
+def get_chat_by_id(user_id, chat_id):
+    try:
+        user_doc = user_collection.find_one({"user_id": user_id}, {"_id": 0, "chat_history": 1})
+        if not user_doc or "chat_history" not in user_doc:
+            return jsonify({"error": "User or chat history not found"}), 404
+
+        for chat in user_doc["chat_history"]:
+            if chat.get("chat_id") == chat_id:
+                chat_cleaned = convert_object_ids(chat)
+                return jsonify({
+                    "chat_id": chat_cleaned.get("chat_id"),
+                    "chat_name": chat_cleaned.get("chat_name"),
+                    "messages": chat_cleaned.get("messages", [])
+                })
+
+        return jsonify({"error": "Chat not found"}), 404
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+
+# Create a new chat for a user
+
+@app.route("/create-chat", methods=["POST"])
+def create_new_chat():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    chat_name = data.get("chat_name", "Welcome Chat")
+    chat_id = str(uuid.uuid4())
+
+    user_doc = user_collection.find_one({"user_id": user_id})
+    if not user_doc:
+        return jsonify({"error": "User not found"}), 404
+
+    new_chat = {
+        "chat_id": chat_id,
+        "chat_name": chat_name,
+        "messages": []
     }
 
     user_collection.update_one(
         {"user_id": user_id},
-        {"$push": {"chat_history": chat_entry}},
-        upsert=True
+        {"$push": {"chat_history": new_chat}}
     )
 
-    qna_doc = {
-        "ques_id": ques_id,
-        "question": question,
-        "answer": answer
-    }
-    global_collection.insert_one(qna_doc)
+    return jsonify({"chat_id": chat_id, "chat_name": chat_name})
 
-    return jsonify({
-        "answer": answer,
-        "ques_id": ques_id
-    })
+
+# delete a chat for a user
+
+@app.route("/delete-chat", methods=["POST"])
+def delete_chat():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    chat_id = data.get("chat_id")
+
+    user_collection.update_one(
+        {"user_id": user_id},
+        {"$pull": {"chat_history": {"chat_id": chat_id}}}
+    )
+
+    return jsonify({"status": "success"})
+
+
+
+# ----------------------------------------------------------
 
 @app.route("/history/<user_id>", methods=["GET"])
 def get_user_history(user_id):
@@ -92,6 +214,9 @@ def get_user_questions(user_id):
 
     questions = [entry["question"] for entry in user_doc["chat_history"] if "question" in entry]
     return jsonify({"user_id": user_id, "questions": questions})
+
+
+# -------------------- User Authentication --------------------
 
 @app.route("/auth", methods=["POST"])
 def authenticate_user():
@@ -121,13 +246,31 @@ def signup_user():
     # Create new user with a unique user_id
     user_id = hashlib.sha256(f"{username}:{password}".encode()).hexdigest()
 
+    # Insert the user into the user_credentials collection
     user_credentials_collection.insert_one({
         "username": username,
         "password": password,
         "user_id": user_id
     })
 
+    # Create the initial user document in the users collection with an initial chat ("Welcome Chat")
+    chat_id = str(uuid.uuid4())  # New chat ID
+    chat_name = "Welcome Chat"  # First chat for the user
+
+    user_collection.insert_one({
+        "user_id": user_id,
+        "chat_history": [
+            {
+                "chat_id": chat_id,
+                "chat_name": chat_name,
+                "messages": []  # Empty messages for the welcome chat
+            }
+        ]
+    })
+
     return jsonify({"status": "success", "user_id": user_id})
+
+
 
 
 

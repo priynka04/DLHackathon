@@ -1,102 +1,237 @@
 import streamlit as st
+import requests
+from uuid import uuid4
 from libs.auth import clear_login_token
+from datetime import datetime
 
-# -------------------- Dummy backend --------------------
+BACKEND_URL = "http://127.0.0.1:5000/"
+
+# -------------------- Get Response from Backend --------------------
 def get_bot_response(user_input):
+    user_id = st.session_state.get("user_id")
+    chat_id = st.session_state.current_chat_id
     mode = st.session_state.get("mode", "Web Search")
-    if mode == "Web Search":
-        return f"[Web Search Mode] Response to: {user_input}"
-    elif mode == "MATLAB Troubleshooting":
-        return f"[MATLAB Troubleshooting Mode] Attempting to solve: {user_input}"
-    else:
-        return "Unknown mode."
+
+    payload = {
+        "user_id": user_id,
+        "chat_id": chat_id,
+        "question": user_input,
+        "mode": mode
+    }
+
+    try:
+        res = requests.post(f"{BACKEND_URL}/ask", json=payload)
+        if res.status_code == 200:
+            return res.json().get("answer", "No answer returned.")
+        else:
+            st.error(f"❌ Failed to get response from backend. Status code: {res.status_code}")
+            return "❌ Failed to get response from backend."
+    except requests.exceptions.RequestException as e:
+        st.error(f"❌ Backend not reachable: {e}")
+        return "❌ Backend not reachable."
 
 # -------------------- Main Chat --------------------
 def chat():
-    # Session state defaults
-    if "chat_sessions" not in st.session_state:
-        st.session_state.chat_sessions = {
-            "Welcome Chat": [
-                {"role": "user", "content": "Hello"},
-                {"role": "assistant", "content": "Hi! How can I assist you today?"}
-            ]
-        }
+    user_id = st.session_state.get("user_id")
 
-    if "current_chat" not in st.session_state:
-        st.session_state.current_chat = "Welcome Chat"
+    # Initialize chat_sessions if not present
+    if "chat_sessions" not in st.session_state:
+        st.session_state.chat_sessions = {}
+
+        # Load existing chats for this user
+        try:
+            res = requests.get(f"{BACKEND_URL}/user/chats/{user_id}")
+            if res.status_code == 200:
+                chats = res.json().get("chats", [])
+                for chat in chats:
+                    chat_id = chat["chat_id"]
+                    chat_name = chat["chat_name"]
+                    st.session_state.chat_sessions[chat_id] = {"chat_name": chat_name, "messages": []}
+            else:
+                st.error(f"Failed to load chats: {res.status_code}")
+        except requests.exceptions.RequestException as e:
+            st.error(f"Failed to connect to server to load chats: {e}")
+        
+
+    # Initialize current_chat_id if not present or if chat_sessions is empty
+    # if "current_chat_id" not in st.session_state:
+    #     st.session_state.current_chat_id = next(iter(st.session_state.chat_sessions.keys())) if st.session_state.chat_sessions else None
+
+
+    # print(st.session_state.current_chat_id)
+
+
+    if "current_chat_id" not in st.session_state or not st.session_state.chat_sessions:
+        if st.session_state.chat_sessions:
+            st.session_state.current_chat_id = list(st.session_state.chat_sessions.keys())[0]
+            try:
+                res = requests.get(f"{BACKEND_URL}/user/chat/{user_id}/{st.session_state.current_chat_id}")
+                if res.status_code == 200:
+                    st.session_state.chat_sessions[st.session_state.current_chat_id]["messages"] = res.json().get("messages", [])
+                else:
+                    st.warning("Could not load messages for the required chat.")
+            except requests.exceptions.RequestException:
+                st.warning("Server unreachable while loading welcome chat messages.")
+            st.rerun() # Rerun to display the welcome chat
+        else:
+            new_id = str(uuid4())
+            st.session_state.chat_sessions[new_id] = {"chat_name": "Welcome Chat", "messages": []}
+            st.session_state.current_chat_id = new_id
+            # Immediately fetch messages for the default chat
+            try:
+                res = requests.get(f"{BACKEND_URL}/user/chat/{user_id}/{new_id}")
+                if res.status_code == 200:
+                    st.session_state.chat_sessions[new_id]["messages"] = res.json().get("messages", [])
+                else:
+                    st.warning("Could not load messages for the welcome chat.")
+            except requests.exceptions.RequestException:
+                st.warning("Server unreachable while loading welcome chat messages.")
+            st.rerun() # Rerun to display the welcome chat
+
+
+    # print(1)
+    # print(st.session_state.chat_sessions)
+
+
 
     if "mode" not in st.session_state:
-        st.session_state.mode = "Web Search"
+        st.session_state.mode = "MATLAB Troubleshooting"
 
-    if "awaiting_response" not in st.session_state:
-        st.session_state.awaiting_response = False
-
-    if "last_input" not in st.session_state:
-        st.session_state.last_input = None
-
-    # Sidebar
+    # ---------------- Sidebar ----------------
     with st.sidebar:
         st.title("🧠 Chats")
-        chat_names = list(st.session_state.chat_sessions.keys())
-        selected_chat = st.radio("Select a chat", chat_names, index=chat_names.index(st.session_state.current_chat))
 
-        if selected_chat != st.session_state.current_chat:
-            st.session_state.current_chat = selected_chat
+        chat_names = {chat_id: chat_info["chat_name"] for chat_id, chat_info in st.session_state.chat_sessions.items()}
+        current_chat_name = st.session_state.chat_sessions[st.session_state.current_chat_id]["chat_name"]
+        selected_chat_name = st.radio("Select a chat", list(chat_names.values()), index=list(chat_names.values()).index(current_chat_name))
+
+        selected_chat_id = [
+            chat_id for chat_id, chat_name in chat_names.items()
+            if chat_name == selected_chat_name
+        ][0]
+
+
+        if selected_chat_id != st.session_state.current_chat_id:
+            st.session_state.current_chat_id = selected_chat_id
+            # Fetch messages for the selected chat
+            try:
+                res = requests.get(f"{BACKEND_URL}/user/chat/{user_id}/{selected_chat_id}")
+                if res.status_code == 200:
+                    st.session_state.chat_sessions[selected_chat_id]["messages"] = res.json().get("messages", [])
+                else:
+                    st.warning(f"Could not load messages for chat ID: {selected_chat_id}")
+            except requests.exceptions.RequestException:
+                st.warning("Server unreachable while loading chat messages.")
             st.rerun()
 
-        current_chat_empty = len(st.session_state.chat_sessions.get(st.session_state.current_chat, [])) == 0
+        # print("------------------")
+        # print(st.session_state.chat_sessions)
 
         if st.button("➕ New Chat"):
-            if current_chat_empty:
-                st.warning("Please add a message to the current chat before creating a new one.")
-            else:
-                new_name = f"Chat {len(st.session_state.chat_sessions) + 1}"
-                st.session_state.chat_sessions[new_name] = []
-                st.session_state.current_chat = new_name
-                st.rerun()
+            try:
+                chat_name = f"Chat {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                res = requests.post(f"{BACKEND_URL}/create-chat", json={
+                    "user_id": user_id,
+                    "chat_name": chat_name
+                })
+                if res.status_code == 200:
+                    chat_data = res.json()
+                    new_id = chat_data["chat_id"]
+                    st.session_state.chat_sessions[new_id] = {
+                        "chat_name": chat_data["chat_name"],
+                        "messages": []
+                    }
+                    st.session_state.current_chat_id = new_id
+                    st.rerun()
+                else:
+                    st.error("Failed to create new chat.")
+            except requests.exceptions.RequestException:
+                st.error("Could not reach server to create new chat.")
 
         if st.button("🗑️ Delete Chat"):
-            if st.session_state.current_chat in st.session_state.chat_sessions:
-                del st.session_state.chat_sessions[st.session_state.current_chat]
-                remaining = list(st.session_state.chat_sessions.keys())
-                if remaining:
-                    st.session_state.current_chat = remaining[0]
+            chat_id = st.session_state.current_chat_id
+            try:
+                res = requests.post(f"{BACKEND_URL}/delete-chat", json={
+                    "user_id": user_id,
+                    "chat_id": chat_id
+                })
+                if res.status_code == 200:
+                    del st.session_state.chat_sessions[chat_id]
+                    if st.session_state.chat_sessions:
+                        st.session_state.current_chat_id = list(st.session_state.chat_sessions.keys())[0]
+                        st.rerun() # Rerun to update the selected chat
+                    else:
+                        # Create default if no chats left
+                        new_id = str(uuid4())
+                        st.session_state.chat_sessions[new_id] = {"chat_name": "Welcome Chat", "messages": []}
+                        st.session_state.current_chat_id = new_id
+                        st.rerun()
                 else:
-                    st.session_state.chat_sessions["New Chat"] = []
-                    st.session_state.current_chat = "New Chat"
-                st.rerun()
+                    st.error("Failed to delete chat.")
+            except requests.exceptions.RequestException:
+                st.error("Server unreachable while deleting chat.")
 
         if st.button("🚪 Logout"):
             st.session_state.logged_in = False
             clear_login_token()
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
             st.rerun()
 
-    # Main area
-    chat_history = st.session_state.chat_sessions[st.session_state.current_chat]
+    # ---------------- Main Chat Display ----------------
+    current_chat_id = st.session_state.current_chat_id
+    chat_info = st.session_state.chat_sessions[current_chat_id]
+    chat_history = chat_info.get("messages", [])
 
-    # Display chat
-    if chat_history:
-        for msg in chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
 
-        user_input = st.chat_input("Type your message...")
-    else:
-        st.markdown("""
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 60vh;">
-        </div>
-        """, unsafe_allow_html=True)
-        user_input = st.chat_input("Type your message...")
+    # for msg in chat_history:
+    #     print("-------------------")
+    #     print(msg)
+    #     print("--------------------")
+    #     if "question" in msg and "answer" in msg:
+    #         with st.chat_message(msg["question"]):
+    #             st.markdown(msg["answer"])
+
+    for msg in chat_history:
+        if "question" in msg and "answer" in msg:
+            # User message
+            with st.chat_message("user"):
+                st.markdown(f"**You:** {msg['question']}")
+            
+            # Assistant/AI message
+            with st.chat_message("assistant"):
+                st.markdown(msg["answer"])
+
+
+    user_input = st.chat_input("Type your message...")
+    # if user_input:
+    #     st.session_state.chat_sessions[current_chat_id]["messages"].append({"role": "user", "content": user_input})
+    #     response = get_bot_response(user_input)
+    #     st.session_state.chat_sessions[current_chat_id]["messages"].append({"role": "assistant", "content": response})
+    #     st.rerun()
 
     if user_input:
-        st.session_state.last_input = user_input
-        chat_history.append({"role": "user", "content": user_input})
-        response = get_bot_response(user_input)
-        chat_history.append({"role": "assistant", "content": response})
-        st.session_state.awaiting_response = False
-        st.rerun()
+        # Append user message
+        st.session_state.chat_sessions[current_chat_id]["messages"].append({
+            "question": user_input
+        })
 
-    # Mode selection buttons
+        with st.chat_message("user"):
+            st.markdown(f"**You:** {user_input}")
+
+        # Get and display bot response immediately
+        response = get_bot_response(user_input)
+
+        st.session_state.chat_sessions[current_chat_id]["messages"][-1]["answer"] = response
+
+        with st.chat_message("assistant"):
+            st.markdown(response)
+
+        # Optionally rerun if needed for other updates
+        # st.rerun()
+
+
+    # ---------------- Mode Selector ----------------
     st.markdown(
         """
         <style>
