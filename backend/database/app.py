@@ -127,6 +127,33 @@ def signup_user():
     return jsonify({"status": "success", "user_id": user_id})
 
 
+
+
+
+# route to get answer using question object id 
+@app.route('/get-answer', methods=['GET'])
+def get_answer_by_object_id():
+    object_id = request.args.get("objectId")
+    if not object_id:
+        return jsonify({"error": "Missing objectId"}), 400
+
+    result = global_collection.find_one({"_id": ObjectId(object_id)}, {"_id": 0})
+    if not result:
+        return jsonify({"error": "Object ID not found"}), 404
+
+    return jsonify(result)
+
+
+
+
+
+
+
+
+
+
+
+
 # -------------------- Run App --------------------
 if __name__ == "__main__":
     app.run(debug=True)
