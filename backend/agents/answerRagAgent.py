@@ -67,5 +67,5 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
 if __name__ == "__main__":
     query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     vectorstore_name = "faiss_troubleshooting_system_configuration"
-    answer = run_rag_agent(query, vectorstore_name)
+    answer = AnswerRagAgent(query, vectorstore_name)
     print("🤖", answer)
