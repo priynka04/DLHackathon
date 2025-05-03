@@ -41,7 +41,7 @@ Question:
 Answer:
 """)
 
-def run_rag_agent(query: str, vectorstore_name: str, k: int = 6):
+def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
     try:
         index_path = f"backend/MainVS/{vectorstore_name}"
         vectorstore = FAISS.load_local(index_path, embedder, allow_dangerous_deserialization=True)
