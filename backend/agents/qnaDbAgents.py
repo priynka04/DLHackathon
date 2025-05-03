@@ -4,10 +4,10 @@ from langchain.vectorstores import FAISS
 from langchain.docstore.document import Document
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import ChatPromptTemplate
-from dotenv import load_dotenv
 import requests
 import pickle
 import google.generativeai as genai
+from dotenv import load_dotenv
 
 
 load_dotenv()
