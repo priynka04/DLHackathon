@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
-import hashlib
 
-BACKEND_URL = "http://localhost:5000"  # Update this if needed
+BACKEND_URL = "http://127.0.0.1:5000/"  # Update this if needed
 
 def save_login_token(user_id):
     st.query_params["user_id"] = user_id
@@ -43,6 +42,9 @@ def login():
 
                 if res.status_code == 200 and res_json.get("status") == "success":
                     user_id = res_json["user_id"]
+                    # Clear session state and initialize for the new user
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
                     st.session_state.logged_in = True
                     st.session_state.user_id = user_id
                     save_login_token(user_id)
