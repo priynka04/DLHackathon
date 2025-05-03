@@ -10,7 +10,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-def query_answer(query: str) -> str:
+def InitialAnsweringAgent(query: str) -> str:
     """
     Function to answer initial query that is not related to MATLAB.
     """
@@ -26,6 +26,6 @@ if __name__ == "__main__":
     query = "Who is the president of the USA?"
     print("Query:")
     print(query)
-    suggestions = query_answer(query)
+    suggestions = InitialAnsweringAgent(query)
     print("Answer:")
     print(suggestions)
