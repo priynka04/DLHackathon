@@ -73,7 +73,18 @@ def get_autocomplete_suggestions(query):
     except requests.exceptions.RequestException:
         return []
 
+# -------------------- Get Top Unique Links --------------------
 
+def get_top_unique_links(links, limit=5):
+    seen = set()
+    unique_links = []
+    for link in links:
+        if isinstance(link, str) and link not in seen:
+            seen.add(link)
+            unique_links.append(link)
+        if len(unique_links) == limit:
+            break
+    return unique_links
 
 
 
@@ -253,7 +264,7 @@ def chat():
                     response = get_bot_response(query)
 
                     st.subheader("🧠 Assistant's Answer")
-                    st.markdown(response)
+                    # st.markdown(response)
 
         st.button("🔙 Back to Chat", on_click=lambda: st.session_state.update({"page": "chat"}))
         st.stop()  # ⛔ Prevents the chat UI from rendering below
@@ -264,14 +275,37 @@ def chat():
     chat_info = st.session_state.chat_sessions[current_chat_id]
     chat_history = chat_info.get("messages", [])
 
+    # print("Chat History: ", chat_history)
+
     for msg in chat_history:
         if "question" in msg and "answer" in msg:
             # User message
             with st.chat_message("user"):
                 st.markdown(f"**You:** {msg['question']}")
+
             # Assistant message
             with st.chat_message("assistant"):
-                st.markdown(msg["answer"])
+                if("answer" in msg["answer"]):
+                    st.markdown(msg["answer"]["answer"])
+                    raw_links = msg["answer"].get("contributing_links", [])
+                    if(raw_links != []):
+                        raw_links = raw_links[0]
+                    # print("Links: ", raw_links)
+                    links = get_top_unique_links(raw_links, limit=5)
+                    
+
+                    if links:
+                        st.markdown("<h5 style='color:#1E90FF;'>🔗 Relevant Work</h5>", unsafe_allow_html=True)
+                        for link in links:
+                            if isinstance(link, str):
+                                # display_text = link.split("//")[-1].split("/")[0]  # domain only
+                                st.markdown(link)
+                            else:
+                                st.markdown("- [Invalid link]")
+                else:
+                    st.markdown("No answer returned.")
+
+
 
     # --- Chat Input ---
     user_input = st.chat_input("Type your message...")
@@ -286,8 +320,34 @@ def chat():
             st.markdown(f"**You:** {user_input}")
 
         # Get and display bot response
-        response = get_bot_response(user_input)
-        st.session_state.chat_sessions[current_chat_id]["messages"][-1]["answer"] = response
+        response_data = get_bot_response(user_input)
+        print("Response Data: ", response_data)
+        # answer = response_data.get("answer", "No answer returned.")
+        answer = response_data
+        # links = response_data.get("contributing_links", [])
+        links = response_data
+        if(links != []):
+            links = links[0]
+        links = get_top_unique_links(links, limit=5)
+        
 
+        # Store response
+        st.session_state.chat_sessions[current_chat_id]["messages"][-1]["answer"] = {
+            "answer": answer,
+            "contributing_links": links
+        }
+
+
+        # print("links: ", links)
+
+        # Display assistant response
         with st.chat_message("assistant"):
-            st.markdown(response)
+            st.markdown(answer)
+            if links:
+                st.markdown("<h5 style='color:#1E90FF;'>🔗 Relevant Work</h5>", unsafe_allow_html=True)
+                for link in links:
+                    if isinstance(link, str):
+                        display_text = link.split("//")[-1].split("/")[0]  # domain
+                        st.markdown(f"- [{display_text}]({link})")
+                    else:
+                        st.markdown("- [Link not available]")
