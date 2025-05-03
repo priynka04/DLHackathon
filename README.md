@@ -41,6 +41,15 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 
 ## ⚙️ Setup Instructions
 
+.env file example (in backend directory) - 
+
+```bask
+GEMINI_API_KEY=your_gemini_api
+MONGODB_URI=your_database_uri
+HUGGINGFACEHUB_API_TOKEN="your_huggingface_api_token"
+```
+
+
 1. Clone the repository:
 
 ```bash
