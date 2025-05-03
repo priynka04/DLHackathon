@@ -41,7 +41,7 @@ Question:
 Answer:
 """)
 
-def run_rag_agent(query: str, vectorstore_name: str, k: int = 4):
+def run_rag_agent(query: str, vectorstore_name: str, k: int = 6):
     try:
         index_path = f"backend/MainVS/{vectorstore_name}"
         vectorstore = FAISS.load_local(index_path, embedder, allow_dangerous_deserialization=True)
@@ -65,7 +65,7 @@ def run_rag_agent(query: str, vectorstore_name: str, k: int = 4):
         return f"❌ Error: {str(e)}"
 
 if __name__ == "__main__":
-    query = "What is the workaround for ldd:FATAL: Could not load library xyz.so?"
+    query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     vectorstore_name = "faiss_troubleshooting_system_configuration"
     answer = run_rag_agent(query, vectorstore_name)
     print("🤖", answer)
