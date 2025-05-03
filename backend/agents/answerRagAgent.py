@@ -136,11 +136,16 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
         print(f"✅ Final RRF documents: {len(final_docs)}")
 
         context = "\n\n".join([doc.page_content for doc in final_docs])
+        links = [doc.metadata.get("source", "No link available") for doc in final_docs]  # Extract links from metadata
         formatted_messages = prompt_template.format_messages(context=context, question=query)
         prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
         response = llm.generate_content(prompt_str)
 
-        return response.text.strip()
+        # return response.text.strip()
+        return {
+            "answer": response.text.strip(),
+            "contributing_links": links
+        }
 
     except Exception as e:
         return f"❌ Error: {str(e)}"

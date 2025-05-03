@@ -60,13 +60,16 @@ def extract_final_answer(llm_response: str) -> str:
 
 def AnswerQnaAgent(query: str, related_qa) -> str:
     qa_pairs = []
+    contributing_links = []
     for item in related_qa:
         answer = fetch_answer(item["objectId"]) # database backend call
         if answer:
             qa_pairs.append({
                 "question": item["question"],
-                "answer": answer
+                "answer": answer['answer']
             })
+            contributing_links.append(answer['contributing_links'])
+
     formatted_qa = "\n\n".join(
         f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
     )
@@ -80,7 +83,11 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
     response = llm.generate_content(prompt_str)
     llm_response = response.text.strip().lower()
     # final_answer = extract_final_answer(response)
-    return llm_response
+    # return llm_response
+    return {
+        "answer": llm_response,
+        "contributing_links": contributing_links
+    }
 
 
 
