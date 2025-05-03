@@ -7,38 +7,40 @@ from langchain.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 import requests
 import pickle
+import google.generativeai as genai
+
 
 load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
 
 embedder = HuggingFaceEmbeddings(
     model_name="intfloat/e5-base-v2",
     model_kwargs={"device": "cpu"}  # Set to "cuda" if using GPU
 )
 
-llm = HuggingFaceEndpoint(
-    repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    temperature=0.7,
-    max_length=200
-)
+# llm = HuggingFaceEndpoint(
+#     repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
+#     temperature=0.7,
+#     max_length=200
+# )
+genai.configure(api_key=api_key)
+llm = genai.GenerativeModel("gemini-2.0-flash")
 
 
 relevance_prompt_template = ChatPromptTemplate.from_messages([
     ("system", 
-     "You are a strict evaluator. Your job is to determine if the provided list of questions is truly relevant for answering a user's query about MATLAB troubleshooting.\n\n"
-     "**STRICT Evaluation Rules:**\n"
-     "- Read the user query and the list of related questions carefully.\n"
-     "- ONLY respond **'yes'** if the any of the listed questions directly help solve the user's query.\n"
-     "- If ANY question seems unrelated, generic, or off-topic—respond strictly with **'no'**.\n"
-     "- If there is ANY doubt or lack of clarity—respond **'no'**.\n"
-     "- If query is not strictly MATLAB troubleshooting—respond **'no'**.\n\n"
-     "**FORMAT (VERY STRICT):**\n"
-     "- Reply with EXACTLY one word: **yes** or **no** (lowercase).\n"
-     "- Do NOT explain, justify, or provide any additional output.\n"
-     "- Do NOT invent, infer, or guess missing context. Stay literal and conservative.\n"
-     "- You will be penalized for incorrect or overly optimistic answers.\n"
-     "- Never use punctuation, never give reasoning, never ask questions.\n"
+     "You have been given some  questions and you are responsible for determining whether these given set of questions is helpful in answering a user's query.\n\n"
+     "**Rules for Answering:**\n"
+     "- Read the user query and the given list of questions.\n"
+     "- If the given questions are closely related to the query and could help address it and it is related to MATLAB troubleshooting, respond with single word **'yes'**.\n"
+     "- Else respond with single word **'no'**.\n"
+     "- If unsure, respond with single word **'no'**.\n\n"
+     "**Response Format:**\n"
+     "- Reply with exactly one word: **yes** or **no** (lowercase).\n"
+     "- No punctuation, no explanations, no formatting—only a single word response."
+     "- Do not provide any extra questions from your side or add any other text or explanation.\n"
     ),
-    ("user", "User Query: {query}\n\nQuestions:\n{retrieved_questions}")
+    ("user", "User Query: {query}\n\n Questions:\n{retrieved_questions}")
 ])
 
 
@@ -65,12 +67,16 @@ def QuestionFinderAgent(query: str, k: int = 1):
     questions_text = "\n".join([f"- {item['question']}" for item in formatted_results])
     print(f"🤖 Retrieved Questions:\n{questions_text}")
 
-    prompt = relevance_prompt_template.format_messages(
-        query=query,
-        retrieved_questions=questions_text
-    )
-    llm_response = llm.invoke(prompt).strip().lower()
-    # print(f"🤖 LLM Response: {llm_response}")
+    # prompt = relevance_prompt_template.format_messages(
+    #     query=query,
+    #     retrieved_questions=questions_text
+    # )
+    # llm_response = llm.invoke(prompt).strip().lower()
+    formatted_messages = relevance_prompt_template.format_messages(query=query,retrieved_questions=questions_text)
+    prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
+    response = llm.generate_content(prompt_str)
+    llm_response = response.text.strip().lower()
+    print(f"🤖 LLM Response: {llm_response}")
     if "yes" in llm_response:
         return formatted_results
     else:
@@ -121,7 +127,8 @@ if __name__ == "__main__":
     # AddQuestionQnaDb("What is the use of Simulink in MATLAB?", "661fc8d213c9b34567bcde13")
 
     # query = "How to resolve MATLAB system error?"
-    query = "How to resolve MATLAB segmentation fault?"
+    query = "Where is the Real-Time tab?"
+    # query = "How to resolve MATLAB segmentation fault?"
     # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     output = QuestionFinderAgent(query, k=4)
 
