@@ -51,12 +51,11 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
 
         docs = vectorstore.similarity_search(query, k=k)
         print(f"🔍 Found {len(docs)} relevant documents.")
-        for i, doc in enumerate(docs):
-            print(f"\nDocument {i + 1}:")
-            print(f"Content: {doc.page_content}")
-            print(f"Metadata: {doc.metadata}\n")
+        # for i, doc in enumerate(docs):
+        #     print(f"\nDocument {i + 1}:")
+        #     print(f"Content: {doc.page_content}")
+        #     print(f"Metadata: {doc.metadata}\n")
         context = "\n\n".join([doc.page_content for doc in docs])
-
         prompt = prompt_template.format(context=context, question=query)
         response = llm.invoke(prompt)
         # formatted_messages = prompt_template.format_messages(query=query,qa_pairs=formatted_qa)
@@ -72,10 +71,10 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
 if __name__ == "__main__":
     # query = "How do I fix segmentation faults in MATLAB?"
     # query = "How to resolve MATLAB system error?"
-    # query = "Where is the Real-Time tab?"
+    query = "Where is the Real-Time tab?"
     # query = "How to resolve MATLAB segmentation fault?"
     # query = "when Simulink models cause seg faults?"
-    query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
+    # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     vectorstore_name = "faiss_vector_store"
     answer = AnswerRagAgent(query, vectorstore_name)
     print("🤖", answer)
