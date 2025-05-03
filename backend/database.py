@@ -11,6 +11,7 @@ import random
 import string
 import uuid
 from main import run_qna_workflow
+from agents.imageQueryAgent import generate_query_from_image
 
 load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -321,6 +322,23 @@ def add_qna():
     return jsonify({"objectId": str(result.inserted_id), "ques_id": ques_id}), 201
 
 
+
+
+
+@app.route('/image-to-query', methods=['POST'])
+def image_to_query():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    file = request.files['file']
+    image_bytes = file.read()
+
+    query = generate_query_from_image(image_bytes)
+    
+    if query.startswith("❌ Error"):
+        return jsonify({'error': query}), 500
+    
+    return jsonify({'query': query})
 
 
 
