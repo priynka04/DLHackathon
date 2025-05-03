@@ -2,13 +2,11 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# Load API key
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("GEMINI_API_KEY not found in environment.")
 
-# Configure Gemini
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
@@ -26,11 +24,9 @@ def get_matlab_suggestions(query: str) -> str:
     Focus only on MATLAB related queries such as syntax errors, runtime errors, Simulink issues, or environment configuration problems, etc. Do not include general programming terms. Avoid giving explanations — just return 3 bullet-point suggestions.
     """
 
-    # Get response from Gemini model
     response = model.generate_content(prompt)
     return response.text.strip()
 
-# Example of how to call the function
 if __name__ == "__main__":
     query = "z"
     suggestions = get_matlab_suggestions(query)
