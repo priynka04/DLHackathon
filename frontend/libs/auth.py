@@ -1,19 +1,14 @@
 import streamlit as st
+import requests
 import hashlib
 
-# --- Hardcoded credentials ---
-VALID_USERNAME = "1"
-VALID_PASSWORD = "1"
+BACKEND_URL = "http://localhost:5000"  # Update this if needed
 
-# --- Utils ---
-def hash_creds(username, password):
-    return hashlib.sha256(f"{username}:{password}".encode()).hexdigest()
-
-def save_login_token(token):
-    st.query_params["token"] = token
+def save_login_token(user_id):
+    st.query_params["user_id"] = user_id
 
 def load_login_token():
-    return st.query_params.get("token", None)
+    return st.query_params.get("user_id", None)
 
 def clear_login_token():
     st.query_params.clear()
@@ -23,24 +18,38 @@ def is_logged_in():
 
 def check_auth():
     if "logged_in" not in st.session_state:
-        token = load_login_token()
-        expected = hash_creds(VALID_USERNAME, VALID_PASSWORD)
-        st.session_state.logged_in = (token == expected)
+        user_id = load_login_token()
+        if user_id:
+            st.session_state.logged_in = True
+            st.session_state.user_id = user_id
+        else:
+            st.session_state.logged_in = False
 
-# --- Login form ---
 def login():
-    st.title("🔐 Login to AI Troubleshooter")
+    st.title("🔐 Login / Sign Up")
 
-    with st.form("login_form", clear_on_submit=False):
+    auth_mode = st.radio("Select mode", ["Login", "Sign Up"], horizontal=True)
+
+    with st.form("auth_form", clear_on_submit=False):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
+        submitted = st.form_submit_button(auth_mode)
 
         if submitted:
-            if username == VALID_USERNAME and password == VALID_PASSWORD:
-                st.session_state.logged_in = True
-                save_login_token(hash_creds(username, password))
-                st.success("Login successful!")
-                st.rerun()
-            else:
-                st.error("Invalid credentials")
+            endpoint = "/auth" if auth_mode == "Login" else "/signup"
+            try:
+                res = requests.post(f"{BACKEND_URL}{endpoint}", json={"username": username, "password": password})
+                res_json = res.json()
+
+                if res.status_code == 200 and res_json.get("status") == "success":
+                    user_id = res_json["user_id"]
+                    st.session_state.logged_in = True
+                    st.session_state.user_id = user_id
+                    save_login_token(user_id)
+                    st.success(f"{auth_mode} successful!")
+                    st.rerun()
+                else:
+                    st.error(res_json.get("message", "Something went wrong"))
+            except requests.exceptions.RequestException as e:
+                st.error("Connection error.")
+                st.exception(e)
