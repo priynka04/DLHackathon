@@ -43,8 +43,8 @@ Answer:
 
 def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
     try:
-        # index_path = f"backend/MainVS/{vectorstore_name}"
-        index_path = vectorstore_name
+        index_path = f"backend/MainVS/{vectorstore_name}"
+        # index_path = vectorstore_name
         vectorstore = FAISS.load_local(index_path, embedder, allow_dangerous_deserialization=True)
 
 

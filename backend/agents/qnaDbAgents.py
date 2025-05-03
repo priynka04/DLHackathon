@@ -24,19 +24,23 @@ llm = HuggingFaceEndpoint(
 
 relevance_prompt_template = ChatPromptTemplate.from_messages([
     ("system", 
-     "You have been given some  questions and you are responsible for determining whether these given set of questions is helpful in answering a user's query.\n\n"
-     "**Rules for Answering:**\n"
-     "- Read the user query and the given list of questions.\n"
-     "- If the given questions are closely related to the query and could help address it and it is related to MATLAB troubleshooting, respond with single word **'yes'**.\n"
-     "- Else respond with single word **'no'**.\n"
-     "- If unsure, respond with single word **'no'**.\n\n"
-     "**Response Format:**\n"
-     "- Reply with exactly one word: **yes** or **no** (lowercase).\n"
-     "- No punctuation, no explanations, no formatting—only a single word response."
-     "- Do not provide any extra questions from your side or add any other text or explanation.\n"
+     "You are a strict evaluator. Your job is to determine if the provided list of questions is truly relevant for answering a user's query about MATLAB troubleshooting.\n\n"
+     "**STRICT Evaluation Rules:**\n"
+     "- Read the user query and the list of related questions carefully.\n"
+     "- ONLY respond **'yes'** if the any of the listed questions directly help solve the user's query.\n"
+     "- If ANY question seems unrelated, generic, or off-topic—respond strictly with **'no'**.\n"
+     "- If there is ANY doubt or lack of clarity—respond **'no'**.\n"
+     "- If query is not strictly MATLAB troubleshooting—respond **'no'**.\n\n"
+     "**FORMAT (VERY STRICT):**\n"
+     "- Reply with EXACTLY one word: **yes** or **no** (lowercase).\n"
+     "- Do NOT explain, justify, or provide any additional output.\n"
+     "- Do NOT invent, infer, or guess missing context. Stay literal and conservative.\n"
+     "- You will be penalized for incorrect or overly optimistic answers.\n"
+     "- Never use punctuation, never give reasoning, never ask questions.\n"
     ),
-    ("user", "User Query: {query}\n\n Questions:\n{retrieved_questions}")
+    ("user", "User Query: {query}\n\nQuestions:\n{retrieved_questions}")
 ])
+
 
 VECTOR_DB_PATH = "./qnaDB"
 
@@ -59,7 +63,7 @@ def QuestionFinderAgent(query: str, k: int = 1):
     ]
     print(f"🤖 Retrieved {len(formatted_results)} questions from qnaDB.")
     questions_text = "\n".join([f"- {item['question']}" for item in formatted_results])
-    # print(f"🤖 Retrieved Questions:\n{questions_text}")
+    print(f"🤖 Retrieved Questions:\n{questions_text}")
 
     prompt = relevance_prompt_template.format_messages(
         query=query,
@@ -117,7 +121,8 @@ if __name__ == "__main__":
     # AddQuestionQnaDb("What is the use of Simulink in MATLAB?", "661fc8d213c9b34567bcde13")
 
     # query = "How to resolve MATLAB system error?"
-    query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
+    query = "How to resolve MATLAB segmentation fault?"
+    # query = "What is ldd:FATAL: Could not load library xyz.so? How do I fix it?"
     output = QuestionFinderAgent(query, k=4)
 
     if output == "no":
