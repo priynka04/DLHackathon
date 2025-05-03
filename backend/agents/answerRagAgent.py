@@ -2,6 +2,7 @@ import os
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
@@ -25,21 +26,19 @@ genai.configure(api_key=api_key)
 llm = genai.GenerativeModel("gemini-2.0-flash")
 
 
-# 3. Prompt template
-prompt_template = PromptTemplate.from_template("""
-You are an expert assistant helping engineers troubleshoot and optimize MATLAB systems.
-Use only the given context to answer the question. Do not make up anything.
-Only answer the question based on the context provided.
-If the context does not contain enough information to answer the question, say "I don't know".
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:
-""")
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", 
+     "You are an expert assistant helping engineers troubleshoot and optimize MATLAB systems.\n"
+     "Use only the given context to answer the question. Do not make up anything.\n"
+     "Only answer the question based on the context provided.\n"
+     "If the context does not contain enough information to answer the question, say \"I don't know\"."
+    ),
+    ("user", 
+     "Context:\n{context}\n\n"
+     "Question:\n{question}\n\n"
+     "Answer:"
+    )
+])
 
 def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
     try:

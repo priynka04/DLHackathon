@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 import random
 import string
 import uuid
+from main import run_qna_workflow
 
 load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -47,7 +48,7 @@ def ask_question():
     mode = data.get("mode", "Web Search")
     timestamp = datetime.utcnow()
 
-    answer = f"{mode}: This is a dummy answer for: {question}"
+    answer = run_qna_workflow(question)
     ques_id = str(uuid.uuid4())
 
     chat_entry = {
