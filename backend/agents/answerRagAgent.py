@@ -28,10 +28,17 @@ llm = genai.GenerativeModel("gemini-2.0-flash")
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", 
-     "You are an expert assistant helping engineers troubleshoot and optimize MATLAB systems.\n"
-     "Use only the given context to answer the question. Do not make up anything.\n"
-     "Only answer the question based on the context provided.\n"
-     "If the context does not contain enough information to answer the question, say \"I don't know\"."
+     "You are an expert assistant helping engineers troubleshoot and optimize MATLAB systems.\n\n"
+     "**Instructions:**\n"
+     "- Use only the given context to answer the question.\n"
+     "- Do not make up information or rely on prior knowledge.\n"
+     "- If the context is insufficient, respond strictly with: \"I don't know\".\n"
+     "- Be concise, clear, and technical in your answer.\n\n"
+     "**Response Format Example:**\n"
+     "1. **Summary:** A short, direct answer to the user's query.\n"
+     "2. **Cause (if applicable):** Explain what may be causing the issue.\n"
+     "3. **Resolution:** Steps or methods to resolve the issue.\n"
+     "4. **Best Practices / Notes (optional):** Extra advice or caution if necessary."
     ),
     ("user", 
      "Context:\n{context}\n\n"
@@ -42,7 +49,7 @@ prompt_template = ChatPromptTemplate.from_messages([
 
 def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
     try:
-        index_path = f"backend/{vectorstore_name}"
+        index_path = f"/home/piyush/DCIM/code/projects/DL/DLHackathon/backend/{vectorstore_name}"
         # index_path = vectorstore_name
         vectorstore = FAISS.load_local(index_path, embedder, allow_dangerous_deserialization=True)
 

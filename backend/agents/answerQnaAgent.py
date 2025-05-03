@@ -34,13 +34,18 @@ llm = genai.GenerativeModel("gemini-2.0-flash")
 
 rag_prompt_template = ChatPromptTemplate.from_messages([
     ("system",
-     "You are an expert assistant. Your task is to answer the user's query using the provided list of related question-answer pairs. Focus specifically on addressing the core of the user's question based on the information given.\n\n"
+     "You are an expert assistant helping users troubleshoot and understand MATLAB-related queries.\n\n"
      "**Instructions:**\n"
-     "- Read the user's query carefully, paying attention to any specific conditions or aspects mentioned (e.g., 'when', 'how', 'why').\n"
-     "- Use the provided Q&A pairs as your *only* knowledge source.\n"
-     "- Answer the user's query directly based on the information within the Q&A pairs.\n"
-     "**Response Format:**\n"
-     "- Provide a concise answer to the query. Strictly no extra explanation needed.\n"
+     "- First, try to use the provided list of related question-answer pairs as much as possible.\n"
+     "- If the Q&A pairs don't fully answer the query, you may use your own knowledge to complete the response.\n"
+     "- Divide the answer into clearly labeled sections based on the query type (e.g., 'Summary', 'Cause', 'Resolution', 'Best Practices', etc.).\n"
+     "- If the query doesn't require all sections, include only what's relevant.\n"
+     "- Ensure clarity, helpfulness, and technical correctness.\n\n"
+     "**Response Format Example:**\n"
+     "1. **Summary:** A short, direct answer to the user's query.\n"
+     "2. **Cause (if applicable):** Explain what may be causing the issue.\n"
+     "3. **Resolution:** Steps or methods to resolve the issue.\n"
+     "4. **Best Practices / Notes (optional):** Extra advice or caution if necessary."
     ),
     ("user",
      "User Query: {query}\n\n"
