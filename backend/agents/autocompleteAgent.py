@@ -22,6 +22,8 @@ def get_matlab_suggestions(query: str) -> str:
     Only give suggestions starting with the exact partial query provided by user.
 
     Focus only on MATLAB related queries such as syntax errors, runtime errors, Simulink issues, or environment configuration problems, etc. Do not include general programming terms. Avoid giving explanations — just return 3 bullet-point suggestions.
+    
+    Do not include any other text or context. Just return the suggestions in a simple string separated by a $ sign.
     """
 
     response = model.generate_content(prompt)
