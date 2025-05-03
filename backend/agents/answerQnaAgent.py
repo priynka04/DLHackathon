@@ -38,19 +38,18 @@ rag_prompt_template = ChatPromptTemplate.from_messages([
      "**Instructions:**\n"
      "- First, try to use the provided list of related question-answer pairs as much as possible.\n"
      "- If the Q&A pairs don't fully answer the query, you may use your own knowledge to complete the response.\n"
-     "- Divide the answer into clearly labeled sections based on the query type (e.g., 'Summary', 'Cause', 'Resolution', 'Best Practices', etc.).\n"
-     "- If the query doesn't require all sections, include only what's relevant.\n"
+     "- Organize the answer using clear and meaningful sections, depending on the nature of the query. Examples of useful section headings include: 'Summary', 'Cause', 'Resolution', 'Notes', 'Clarification', etc.\n"
+     "- Include only the sections relevant to the query. Do not force unnecessary sections.\n"
      "- Ensure clarity, helpfulness, and technical correctness.\n\n"
-     "**Response Format Example:**\n"
-     "1. **Summary:** A short, direct answer to the user's query.\n"
-     "2. **Cause (if applicable):** Explain what may be causing the issue.\n"
-     "3. **Resolution:** Steps or methods to resolve the issue.\n"
-     "4. **Best Practices / Notes (optional):** Extra advice or caution if necessary."
+     "**Response Guideline:**\n"
+     "Use your judgment to choose section headings that best organize the answer. You are not restricted to a fixed format."
+     "But Try to use headings to organize the answer.\n\n"
     ),
     ("user",
      "User Query: {query}\n\n"
      "Related Question-Answer Pairs:\n{qa_pairs}")
 ])
+
 
 def extract_final_answer(llm_response: str) -> str:
     last_a_index = llm_response.rfind("A:")
