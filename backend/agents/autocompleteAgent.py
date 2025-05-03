@@ -28,7 +28,9 @@ def get_matlab_suggestions(query: str) -> str:
     return response.text.strip()
 
 if __name__ == "__main__":
-    query = "z"
+    query = "how to pl"
+    print("Query:")
+    print(query)
     suggestions = get_matlab_suggestions(query)
     print("MATLAB Suggestions:")
     print(suggestions)
