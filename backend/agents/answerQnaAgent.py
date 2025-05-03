@@ -1,6 +1,22 @@
 import re
 from langchain.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEndpoint
+import requests
+
+
+BACKEND_URL = "http://127.0.0.1:5000/get-answer"
+def fetch_answer(object_id):
+    try:
+        response = requests.get(f"{BACKEND_URL}?objectId={object_id}")
+        if response.status_code == 200:
+            return response.json().get("answer", "")
+        else:
+            return ""
+    except Exception as e:
+        print(f"Error fetching answer for {object_id}: {e}")
+        return ""
+
+
 
 llm = HuggingFaceEndpoint(
     repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
@@ -32,9 +48,19 @@ def extract_final_answer(llm_response: str) -> str:
 
 
 def AnswerQnaAgent(query: str, related_qa) -> str:
+    qa_pairs = []
+    for item in related_qa:
+        answer = fetch_answer(item["objectId"])
+        if answer:
+            qa_pairs.append({
+                "question": item["question"],
+                "answer": answer
+            })
     formatted_qa = "\n\n".join(
-        f"Q: {pair['question']}\nA: {pair['answer']}" for pair in related_qa
+        f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
     )
+    for pair in qa_pairs:
+        print(f"Q: {pair['question']}\nA: {pair['answer']}")
     prompt = rag_prompt_template.format_messages(query=query, qa_pairs=formatted_qa)
     response = llm.invoke(prompt).strip()
     final_answer = extract_final_answer(response)
@@ -46,10 +72,15 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
 if __name__ == "__main__":
 
     query = "How do I fix segmentation faults in MATLAB?"
+    # related_qa = [
+    #     {"question": "What causes segmentation faults in MATLAB?", "answer": "Segmentation faults usually occur due to invalid memory access in compiled MEX functions."},
+    #     {"question": "How to debug segmentation faults?", "answer": "Use MATLAB's crash dump logs and debug with GDB if MEX is involved."},
+    #     {"question": "Can Simulink models cause segmentation faults?", "answer": "Yes, if S-functions have invalid memory access or indexing issues."}
+    # ]
     related_qa = [
-        {"question": "What causes segmentation faults in MATLAB?", "answer": "Segmentation faults usually occur due to invalid memory access in compiled MEX functions."},
-        {"question": "How to debug segmentation faults?", "answer": "Use MATLAB's crash dump logs and debug with GDB if MEX is involved."},
-        {"question": "Can Simulink models cause segmentation faults?", "answer": "Yes, if S-functions have invalid memory access or indexing issues."}
+        {"question": "How to debug segmentation faults?", "objectId": "68160d8d5cd131e138ad33cd"},
+        {"question": "What causes segmentation faults in MATLAB?", "objectId": "68160d1d5cd131e138ad33cc"},
+        {"question": "Can Simulink models cause segmentation faults?", "objectId": "68160dbb5cd131e138ad33ce"},
     ]
 
     answer = AnswerQnaAgent(query, related_qa)
