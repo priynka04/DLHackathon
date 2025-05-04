@@ -30,6 +30,7 @@ def fetch_answer(object_id):
 # )
 genai.configure(api_key=api_key)
 llm = genai.GenerativeModel("gemini-2.0-flash")
+chat = llm.start_chat()
 
 
 rag_prompt_template = ChatPromptTemplate.from_messages([
@@ -60,7 +61,7 @@ def extract_final_answer(llm_response: str) -> str:
 
 def AnswerQnaAgent(query: str, related_qa) -> str:
     qa_pairs = []
-    contributing_links = []
+    contributing_link = []
     for item in related_qa:
         answer = fetch_answer(item["objectId"]) # database backend call
         if answer:
@@ -68,7 +69,9 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
                 "question": item["question"],
                 "answer": answer['answer']
             })
-            contributing_links.append(answer['contributing_links'])
+            for i in answer['contributing_links']:
+                contributing_link.append(i)
+            print("Contributing Links:", answer['contributing_links'])
 
     formatted_qa = "\n\n".join(
         f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
@@ -80,13 +83,14 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
     # response = llm.invoke(prompt).strip()
     formatted_messages = rag_prompt_template.format_messages(query=query,qa_pairs=formatted_qa)
     prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
-    response = llm.generate_content(prompt_str)
+    # response = llm.generate_content(prompt_str)
+    response = chat.send_message(prompt_str)
     llm_response = response.text.strip().lower()
     # final_answer = extract_final_answer(response)
     # return llm_response
     return {
         "answer": llm_response,
-        "contributing_links": contributing_links
+        "contributing_links": contributing_link
     }
 
 
