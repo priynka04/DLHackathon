@@ -106,7 +106,11 @@ pip install -r requirements.txt
 3. Run the app:
 
 ```bash
-streamlit run app/chatbot_ui.py
+python backend/database.py
+```
+
+```bash
+streamlit run frontend/app.py
 ```
 
 ## 📄 Example Queries
@@ -125,3 +129,7 @@ Developed as part of **CS-671 Deep Learning Hackathon**.
 - Manjeet Rai - B23152
 - Tarun Singh - B23103
 - Yashodeep - B23040
+
+## Admin username and pass
+username: abc
+pass: pqr
