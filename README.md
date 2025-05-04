@@ -78,9 +78,9 @@ streamlit run app/chatbot_ui.py
 
 Developed as part of **CS-671 Deep Learning Hackathon**.
 
-- Bhupesh Yadav
-- Piyush Kumar
-- Asif Hoda
-- Manjeet Rai
-- Tarun Singh
-- Yashodeep
+- Bhupesh Yadav - B23200
+- Piyush Kumar - B23167
+- Asif Hoda - B23253
+- Manjeet Rai - B23152
+- Tarun Singh - B23103
+- Yashodeep - B23040
