@@ -9,20 +9,27 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 ## 🛠️ Tech Stack
 
 - **Frontend**: Streamlit
-- **Backend**: LangChain, Python
-- **LLMs**: Hugging Face Transformers
-- **Vector Store**: FAISS or ChromaDB
-- **Other Tools**: Sentence Transformers, Transformers, OpenAI API (optional)
+- **Backend**: LangChain,Langgraph, Python, Flask
+- **LLMs**: Hugging Face Transformers, Gemini
+- **Vector Store**: FAISS
+- **Database**: MongoDB
+- **Other Tools**: Sentence Transformers
 
 ---
 
 ## 🚀 Features
 
 - Chat-based troubleshooting for MATLAB errors and syntax
-- Contextual query understanding via document retrieval
-- LLM-powered answers based on MATLAB documentation
-- User-friendly web interface
-- Modular, extensible backend pipeline
+- Chat-based multi-turn troubleshooting with memory.
+- Image based trouleshooting for MATLAB errors.
+- Citation of sources or documentation sections in responses.
+- Analytics dashboard for admin users.
+- Contextual query understanding via document retrieval.
+- LLM-powered answers based on MATLAB full documentation.
+- User-friendly UI interface.
+- Multi Chat Sessions maintainenece to access previous chats
+- Authentication for user and admin accounts.
+- Modular, extensible backend pipeline.
 
 ---
 
@@ -78,9 +85,9 @@ streamlit run app/chatbot_ui.py
 
 Developed as part of **CS-671 Deep Learning Hackathon**.
 
-- Bhupesh Yadav
-- Piyush Kumar
-- Asif Hoda
-- Manjeet Rai
-- Tarun Singh
-- Yashodeep
+- Bhupesh Yadav - B23200
+- Piyush Kumar - B23167
+- Asif Hoda - B23253
+- Manjeet Rai - B23152
+- Tarun Singh - B23103
+- Yashodeep - B23040
