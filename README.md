@@ -131,5 +131,5 @@ Developed as part of **CS-671 Deep Learning Hackathon**.
 - Yashodeep - B23040
 
 ## Admin username and pass
-username: abc
-pass: pqr
+- username: abc
+- pass: pqr
