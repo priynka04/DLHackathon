@@ -25,7 +25,7 @@ embedder = HuggingFaceEmbeddings(
 #     max_length=200)
 genai.configure(api_key=api_key)
 llm = genai.GenerativeModel("gemini-2.0-flash")
-
+chat = llm.start_chat()
 
 
 # RAG-Fusion: Related
@@ -87,7 +87,7 @@ prompt_template = ChatPromptTemplate.from_messages([
      "**Instructions:**\n"
      "- Use only the given context to answer the question.\n"
      "- Do not make up information or rely on prior knowledge.\n"
-     "- If the context is insufficient, respond strictly with: \"I don't know\".\n"
+    #  "- If the context is insufficient, respond strictly with: \"I don't know\".\n"
      "- Be concise, clear, and technical in your answer.\n\n"
      "**Response Guideline:**\n"
      "Structure the answer clearly with relevant technical headings (e.g., \"Issue\", \"Root Cause\", \"Fix\", \"Notes\") only if appropriate. Use your judgment to decide which headings best organize the answer."
@@ -139,7 +139,8 @@ def AnswerRagAgent(query: str, vectorstore_name: str, k: int = 6):
         links = [doc.metadata.get("source", "No link available") for doc in final_docs]  # Extract links from metadata
         formatted_messages = prompt_template.format_messages(context=context, question=query)
         prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
-        response = llm.generate_content(prompt_str)
+        # response = llm.generate_content(prompt_str)
+        response = chat.send_message(prompt_str)
 
         # return response.text.strip()
         return {

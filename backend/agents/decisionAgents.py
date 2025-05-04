@@ -47,6 +47,7 @@ def isQueryRelevantAgent(query: str) -> str:
         prompt_str = "\n\n".join([f"{msg.content}" for msg in formatted_messages])
         response = llm.generate_content(prompt_str)
         llm_response = response.text.strip().lower()
+        print("LLM Response:", llm_response)
 
         if "yes" in llm_response:
             return "yes"

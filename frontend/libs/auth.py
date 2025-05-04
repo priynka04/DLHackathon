@@ -27,7 +27,7 @@ def check_auth():
 def login():
     st.title("🔐 Login / Sign Up")
 
-    auth_mode = st.radio("Select mode", ["Login", "Sign Up"], horizontal=True)
+    auth_mode = st.radio("Select mode", ["Login", "Sign Up", "Admin"], horizontal=True)
 
     with st.form("auth_form", clear_on_submit=False):
         username = st.text_input("Username")
@@ -35,23 +35,41 @@ def login():
         submitted = st.form_submit_button(auth_mode)
 
         if submitted:
-            endpoint = "/auth" if auth_mode == "Login" else "/signup"
-            try:
-                res = requests.post(f"{BACKEND_URL}{endpoint}", json={"username": username, "password": password})
-                res_json = res.json()
+            if auth_mode == "Admin":
+                # Temporary hardcoded admin credentials
+                ADMIN_USERNAME = "abc"
+                ADMIN_PASSWORD = "pqr"
 
-                if res.status_code == 200 and res_json.get("status") == "success":
-                    user_id = res_json["user_id"]
-                    # Clear session state and initialize for the new user
+                if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+                    # Clear session state and initialize for admin
                     for key in list(st.session_state.keys()):
                         del st.session_state[key]
                     st.session_state.logged_in = True
-                    st.session_state.user_id = user_id
-                    save_login_token(user_id)
-                    st.success(f"{auth_mode} successful!")
+                    st.session_state.user_id = "admin"
+                    st.session_state.is_admin = True
+                    save_login_token("admin")
+                    st.success("Admin login successful!")
                     st.rerun()
                 else:
-                    st.error(res_json.get("message", "Something went wrong"))
-            except requests.exceptions.RequestException as e:
-                st.error("Connection error.")
-                st.exception(e)
+                    st.error("Invalid admin credentials.")
+            else:
+                endpoint = "/auth" if auth_mode == "Login" else "/signup"
+                try:
+                    res = requests.post(f"{BACKEND_URL}{endpoint}", json={"username": username, "password": password})
+                    res_json = res.json()
+
+                    if res.status_code == 200 and res_json.get("status") == "success":
+                        user_id = res_json["user_id"]
+                        # Clear session state and initialize for the new user
+                        for key in list(st.session_state.keys()):
+                            del st.session_state[key]
+                        st.session_state.logged_in = True
+                        st.session_state.user_id = user_id
+                        save_login_token(user_id)
+                        st.success(f"{auth_mode} successful!")
+                        st.rerun()
+                    else:
+                        st.error(res_json.get("message", "Something went wrong"))
+                except requests.exceptions.RequestException as e:
+                    st.error("Connection error.")
+                    st.exception(e)

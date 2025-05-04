@@ -9,6 +9,8 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
+chat = model.start_chat()
+
 
 def InitialAnsweringAgent(query: str) -> str:
     """
@@ -19,7 +21,8 @@ def InitialAnsweringAgent(query: str) -> str:
     Prompt : Be friendly, keep your answer short and simple.
     """
 
-    response = model.generate_content(prompt)
+    # response = model.generate_content(prompt)
+    response = chat.send_message(prompt)
     return {
         'answer': response.text.strip(),
         'contributing_links': []
