@@ -115,7 +115,6 @@ streamlit run frontend/app.py
 
 ## 📄 Example Queries
 [Examples queries](results/)
----
 
 ## 👥 Team
 
