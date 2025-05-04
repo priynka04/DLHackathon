@@ -349,7 +349,47 @@ def image_to_query():
     return jsonify({'query': query})
 
 
+# 1) List all users for admin
+@app.route("/admin/users", methods=["GET"])
+def get_all_users():
+    try:
+        users_cursor = user_credentials_collection.find({}, {"_id": 0, "user_id": 1, "username": 1})
+        users = list(users_cursor)
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+
+# 2) Dump raw user_collection for admin download
+@app.route("/admin/raw_logs", methods=["GET"])
+def get_raw_logs():
+    try:
+        users_cursor = user_collection.find({}, {"_id": 0})
+        users = list(users_cursor)
+        return jsonify(users)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+#3 Return full chat_history for one user ———
+@app.route("/hist/<user_id>", methods=["GET"])
+def get_user_history_chat(user_id):
+    """
+    Returns JSON array of documents matching user_id, e.g.
+      [ { user_id, chat_history: [ { chat_id, chat_name, messages: […] }, … ] } ]
+    """
+    try:
+        # find all docs for this user (should normally be one)
+        docs = list(
+            user_collection.find(
+                {"user_id": user_id},
+                {"_id": 0, "user_id": 1, "chat_history": 1}
+            )
+        )
+        return jsonify(docs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
