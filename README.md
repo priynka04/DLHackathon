@@ -12,6 +12,7 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 - **Backend**: LangChain,Langgraph, Python, Flask
 - **LLMs**: Hugging Face Transformers, Gemini
 - **Vector Store**: FAISS
+- **Database**: MongoDB
 - **Other Tools**: Sentence Transformers
 
 ---
@@ -26,6 +27,7 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 - Contextual query understanding via document retrieval.
 - LLM-powered answers based on MATLAB full documentation.
 - User-friendly UI interface.
+- Multi Chat Sessions maintainenece to access previous chats
 - Authentication for user and admin accounts.
 - Modular, extensible backend pipeline.
 
