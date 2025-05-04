@@ -9,7 +9,7 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 ## 🛠️ Tech Stack
 
 - **Frontend**: Streamlit
-- **Backend**: LangChain, Python, Flask
+- **Backend**: LangChain,Langgraph, Python, Flask
 - **LLMs**: Hugging Face Transformers, Gemini
 - **Vector Store**: FAISS
 - **Other Tools**: Sentence Transformers
@@ -19,9 +19,11 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 ## 🚀 Features
 
 - Chat-based troubleshooting for MATLAB errors and syntax
+- Chat-based multi-turn troubleshooting with memory.
+- Image based trouleshooting for MATLAB errors 
 - Contextual query understanding via document retrieval
-- LLM-powered answers based on MATLAB documentation
-- User-friendly web interface
+- LLM-powered answers based on MATLAB full documentation
+- User-friendly UI interface
 - Modular, extensible backend pipeline
 
 ---
