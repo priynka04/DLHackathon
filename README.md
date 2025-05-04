@@ -9,10 +9,10 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 ## 🛠️ Tech Stack
 
 - **Frontend**: Streamlit
-- **Backend**: LangChain, Python
-- **LLMs**: Hugging Face Transformers
-- **Vector Store**: FAISS or ChromaDB
-- **Other Tools**: Sentence Transformers, Transformers, OpenAI API (optional)
+- **Backend**: LangChain, Python, Flask
+- **LLMs**: Hugging Face Transformers, Gemini
+- **Vector Store**: FAISS
+- **Other Tools**: Sentence Transformers
 
 ---
 
