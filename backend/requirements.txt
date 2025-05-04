@@ -1,10 +1,19 @@
 
+# sentence-transformers
+# chromadb
+# beautifulsoup4
+# requests
+# unstructured
+# tqdm
+
+
+flask
+flask_cors
+pymongo
+dotenv
+langgraph
 langchain
-sentence-transformers
-chromadb
-beautifulsoup4
-requests
-unstructured
-tqdm
+langchain_community
+langchain_huggingface
 google-generativeai
-python-dotenv
+faiss-cpu

@@ -71,7 +71,7 @@ def AnswerQnaAgent(query: str, related_qa) -> str:
             })
             for i in answer['contributing_links']:
                 contributing_link.append(i)
-            print("Contributing Links:", answer['contributing_links'])
+            # print("Contributing Links:", answer['contributing_links'])
 
     formatted_qa = "\n\n".join(
         f"Q: {pair['question']}\nA: {pair['answer']}" for pair in qa_pairs
