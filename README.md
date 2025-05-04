@@ -114,9 +114,7 @@ streamlit run frontend/app.py
 ```
 
 ## 📄 Example Queries
-- "Fix error: 'Index exceeds matrix dimensions'"
-- "What does 'NaN' mean in MATLAB and how to handle it?"
-- "Why is my matrix multiplication failing in MATLAB?"
+[Examples queries](results/)
 ---
 
 ## 👥 Team
