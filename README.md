@@ -33,6 +33,40 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 
 ---
 
+## Project Structure 
+```
+├── backend
+│   ├── agents
+│   │   ├── answerQnaAgent.py
+│   │   ├── answerRagAgent.py
+│   │   ├── autocompleteAgent.py
+│   │   ├── decisionAgents.py
+│   │   ├── imageQueryAgent.py
+│   │   ├── intialAnsweringAgent.py
+│   │   ├── qnaDbAgents.py
+│   │   ├── queryAnnotatorAgent.py
+│   │   └── scrapingAgent.py
+│   ├── database.py
+│   ├── faiss_vector_store
+│   │   ├── index.faiss
+│   │   └── index.pkl
+│   ├── main.py
+│   ├── __pycache__
+│   │   └── main.cpython-310.pyc
+│   ├── qnaDB
+│   │   ├── index.faiss
+│   │   └── index.pkl
+│   └── requirements.txt
+├── Backend.jpg
+├── frontend
+│   ├── app.py
+│   └── libs
+├── Frontend_UI.jpg
+├── README.md
+├── results
+└── visited.txt
+```
+
 ## 🧩 Frontend User Flow
 
 ![Frontend User Flow 1](Frontend_UI.jpg)
