@@ -17,6 +17,11 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 
 ---
 
+## Final Presentation
+- https://app.presentations.ai/view/4uvfse
+
+---
+
 ## 🚀 Features
 
 - Chat-based troubleshooting for MATLAB errors and syntax
