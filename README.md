@@ -20,11 +20,14 @@ This project aims to build a chatbot that helps users troubleshoot MATLAB-relate
 
 - Chat-based troubleshooting for MATLAB errors and syntax
 - Chat-based multi-turn troubleshooting with memory.
-- Image based trouleshooting for MATLAB errors 
-- Contextual query understanding via document retrieval
-- LLM-powered answers based on MATLAB full documentation
-- User-friendly UI interface
-- Modular, extensible backend pipeline
+- Image based trouleshooting for MATLAB errors.
+- Citation of sources or documentation sections in responses.
+- Analytics dashboard for admin users.
+- Contextual query understanding via document retrieval.
+- LLM-powered answers based on MATLAB full documentation.
+- User-friendly UI interface.
+- Authentication for user and admin accounts.
+- Modular, extensible backend pipeline.
 
 ---
 
