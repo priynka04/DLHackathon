@@ -125,12 +125,6 @@ streamlit run frontend/app.py
 
 Developed as part of **CS-671 Deep Learning Hackathon**.
 
-- Bhupesh Yadav - B23200
-- Piyush Kumar - B23167
-- Asif Hoda - B23253
-- Manjeet Rai - B23152
-- Tarun Singh - B23103
-- Yashodeep - B23040
 
 ## Admin username and pass
 - username: abc
